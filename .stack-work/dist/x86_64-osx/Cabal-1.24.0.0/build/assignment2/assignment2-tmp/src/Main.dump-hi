@@ -1,11 +1,11 @@
 
 ==================== FINAL INTERFACE ====================
-2016-11-10 11:58:05.918277 UTC
+2016-11-16 23:27:26.758528 UTC
 
 interface main@main:Main 8001
-  interface hash: 40232328c987297354ef548eb846c9fa
-  ABI hash: 2c688aab3aed933b55b0ab5163f19e52
-  export-list hash: 1934dcf07fbe3652d98fa57632b2d65d
+  interface hash: 00cc22753f48e325b1dca71347f54092
+  ABI hash: a9d473aca36e703b09b827ac5a49477e
+  export-list hash: 59af36c371342adf3c34bfa4cd466ca6
   orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
   flag hash: 5a8008075d597e82966edd93f13cccaa
   sig of: Nothing
@@ -13,11 +13,17 @@ interface main@main:Main 8001
   where
 exports:
   Main.addNewSocket
+  Main.defaultMessage
+  Main.handleJoinChatroom
+  Main.listenForMessagesFromOthers
   Main.main
   Main.numberOfActiveSockets
+  Main.parseMessage
   Main.respondToMessage
   Main.runServer
   Main.waitForConnection
+  Main.Message{Main.Message chatroomToJoin clientIp clientName errorCode errorDescription joinId joinedChatRoom leaveChatroom leftChatroom messageType port roomRef}
+  Main.Msg
 module dependencies:
 package dependencies: array-0.5.1.1@array-0.5.1.1 base-4.9.0.0
                       binary-0.8.3.0@binary-0.8.3.0
@@ -50,8 +56,10 @@ family instance modules: base-4.9.0.0:Control.Applicative
                          containers-0.5.7.1@containers-0.5.7.1:Data.Set.Base
                          text-1.2.2.1@text-1.2.2.1-9Yh8rJoh8fO2JMLWffT3Qs:Data.Text
 import  -/  base-4.9.0.0:Control.Concurrent 98a3a12a2ace3d27758947d9f1041f90
+import  -/  base-4.9.0.0:Control.Concurrent.Chan d55a50c16a7726146797e8faa62a516b
 import  -/  base-4.9.0.0:Data.Foldable 8aeb682f6c74f97fcf0ace0d608a43ea
 import  -/  base-4.9.0.0:Data.List 49b86831b79b49ce5d4d9416ecba61df
+import  -/  base-4.9.0.0:Data.Maybe 5f2ba364cbe65c060bc5436bc0b9d049
 import  -/  base-4.9.0.0:Data.OldList 0058409f994fb13ae0616e3f1e5b4dae
 import  -/  base-4.9.0.0:Data.Tuple acb0ed10307ed88df6c81b8589f4de16
 import  -/  base-4.9.0.0:GHC.Base 8ed3be81c0707b322f975a84ae1bb816
@@ -72,6 +80,102 @@ import  -/  split-0.2.3.1@split-0.2.3.1-IJKK4pOCYGKud0jZImZke:Data.List.Split.In
 import  -/  text-1.2.2.1@text-1.2.2.1-9Yh8rJoh8fO2JMLWffT3Qs:Data.Text 1e73069de2859bae8530c14767b0c6af
 import  -/  text-1.2.2.1@text-1.2.2.1-9Yh8rJoh8fO2JMLWffT3Qs:Data.Text.Internal bfb0ec5fde448272375be97e2314e47b
 import  -/  text-1.2.2.1@text-1.2.2.1-9Yh8rJoh8fO2JMLWffT3Qs:Data.Text.Show f1f9b8deb132e3cc6c9369ebd9da68d2
+ae707930da803b3773e2a53225f25124
+  $fShowMessage :: GHC.Show.Show Main.Message
+  DFunId
+  {- Strictness: m, Inline: [ALWAYS] CONLIKE,
+     Unfolding: DFun:.
+                  @ Main.Message
+                  Main.$fShowMessage_$cshowsPrec
+                  Main.$fShowMessage_$cshow
+                  Main.$fShowMessage_$cshowList -}
+ae707930da803b3773e2a53225f25124
+  $fShowMessage1 :: Main.Message -> GHC.Show.ShowS
+  {- Arity: 2,
+     Unfolding: (\ (w :: Main.Message) (w1 :: GHC.Base.String) ->
+                 case w of ww { Main.Message ww1 ww2 ww3 ww4 ww5 ww6 ww7 ww8 ww9 ww10 ww11 ww12 ->
+                 Main.$w$cshowsPrec
+                   0#
+                   ww1
+                   ww2
+                   ww3
+                   ww4
+                   ww5
+                   ww6
+                   ww7
+                   ww8
+                   ww9
+                   ww10
+                   ww11
+                   ww12
+                   w1 }) -}
+ae707930da803b3773e2a53225f25124
+  $fShowMessage_$cshow :: Main.Message -> GHC.Base.String
+  {- Arity: 1,
+     Strictness: <S,1*U(1*U(U,U,U),1*U(U,U,U),1*U(U),1*U(U,U,U),1*U(U,U,U),1*U(U,U,U),1*U(U),1*U(U),1*U(U),1*U(U,U,U),1*U(U,U,U),1*U(U,U,U))>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (x :: Main.Message) ->
+                 Main.$fShowMessage_$cshowsPrec
+                   GHC.Show.shows22
+                   x
+                   (GHC.Types.[] @ GHC.Types.Char)) -}
+ae707930da803b3773e2a53225f25124
+  $fShowMessage_$cshowList :: [Main.Message] -> GHC.Show.ShowS
+  {- Arity: 2,
+     Unfolding: (GHC.Show.showList__
+                   @ Main.Message
+                   Main.$fShowMessage1) -}
+ae707930da803b3773e2a53225f25124
+  $fShowMessage_$cshowsPrec ::
+    GHC.Types.Int -> Main.Message -> GHC.Show.ShowS
+  {- Arity: 3,
+     Strictness: <S(S),1*U(U)><S,1*U(1*U(U,U,U),1*U(U,U,U),1*U(U),1*U(U,U,U),1*U(U,U,U),1*U(U,U,U),1*U(U),1*U(U),1*U(U),1*U(U,U,U),1*U(U,U,U),1*U(U,U,U))><L,U>,
+     Inline: INLINE[0],
+     Unfolding: InlineRule (3, True, False)
+                (\ (w :: GHC.Types.Int)
+                   (w1 :: Main.Message)
+                   (w2 :: GHC.Base.String) ->
+                 case w of ww { GHC.Types.I# ww1 ->
+                 case w1 of ww2 { Main.Message ww3 ww4 ww5 ww6 ww7 ww8 ww9 ww10 ww11 ww12 ww13 ww14 ->
+                 Main.$w$cshowsPrec
+                   ww1
+                   ww3
+                   ww4
+                   ww5
+                   ww6
+                   ww7
+                   ww8
+                   ww9
+                   ww10
+                   ww11
+                   ww12
+                   ww13
+                   ww14
+                   w2 } }) -}
+1a361c73026fda0f1d7f7bfaf0295724
+  $tc'Message :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   484312489755016824##
+                   13197764062834505629##
+                   Main.$trModule
+                   Main.$tc'Message1) -}
+949aff41dcd0bdb52a198738e7cb1133
+  $tc'Message1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "'Message"#) -}
+a317a2b68abab7bca30880bdf39d36dc
+  $tcMessage :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   11750200497582023075##
+                   1107912994446066806##
+                   Main.$trModule
+                   Main.$tcMessage1) -}
+9d158e0a5fe47b777c8610b9e6ae8f21
+  $tcMessage1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "Message"#) -}
 d6831ef04cb9301b090dfae6f7bb7ec7
   $trModule :: GHC.Types.Module
   {- HasNoCafRefs, Strictness: m,
@@ -84,6 +188,26 @@ d6831ef04cb9301b090dfae6f7bb7ec7
   $trModule2 :: GHC.Types.TrName
   {- HasNoCafRefs, Strictness: m1,
      Unfolding: (GHC.Types.TrNameS "main"#) -}
+310f256dc3ba5927a728f9e4a67b4183
+  $w$cshowsPrec ::
+    GHC.Prim.Int#
+    -> Data.Text.Internal.Text
+    -> Data.Text.Internal.Text
+    -> GHC.Types.Int
+    -> Data.Text.Internal.Text
+    -> Data.Text.Internal.Text
+    -> Data.Text.Internal.Text
+    -> GHC.Types.Int
+    -> GHC.Types.Int
+    -> GHC.Types.Int
+    -> Data.Text.Internal.Text
+    -> Data.Text.Internal.Text
+    -> Data.Text.Internal.Text
+    -> GHC.Base.String
+    -> GHC.Base.String
+  {- Arity: 14,
+     Strictness: <S,U><L,1*U(U,U,U)><L,1*U(U,U,U)><L,1*U(U)><L,1*U(U,U,U)><L,1*U(U,U,U)><L,1*U(U,U,U)><L,1*U(U)><L,1*U(U)><L,1*U(U)><L,1*U(U,U,U)><L,1*U(U,U,U)><L,1*U(U,U,U)><L,U>,
+     Inline: [0] -}
 682e83a424fa6b6b0fc1eb67189e547f
   $waddNewSocket ::
     Network.Socket.Types.Socket
@@ -111,7 +235,80 @@ d6831ef04cb9301b090dfae6f7bb7ec7
                            ww
                            (GHC.Types.[] @ Network.Socket.Types.Socket))
                    GHC.Types.True -> w } }) -}
-e0280759ac45a2e7778a271bd83f31a7
+4e3ce30bf69e8358455415472547029d
+  $whandleJoinChatroom ::
+    Network.Socket.Types.Socket
+    -> GHC.Base.Maybe Main.Message
+    -> Control.Concurrent.Chan.Chan Main.Message
+    -> GHC.Prim.Int#
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld,
+          GHC.Base.Maybe Main.Message #)
+  {- Arity: 5,
+     Strictness: <L,U(U(U),A,A,A,A)><L,U><L,1*U(A,U)><S,1*U><S,U>,
+     Inline: [0] -}
+350f641c5ae7c5f21ab7a431e42e6540
+  $wlistenForMessagesFromOthers ::
+    GHC.Prim.MVar#
+      GHC.Prim.RealWorld (Control.Concurrent.Chan.Stream Main.Message)
+    -> GHC.Prim.MVar#
+         GHC.Prim.RealWorld (Control.Concurrent.Chan.Stream Main.Message)
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+  {- Arity: 3, Strictness: <S,U><S,1*U><S,U>, Inline: [0],
+     Unfolding: (\ (ww :: GHC.Prim.MVar#
+                            GHC.Prim.RealWorld (Control.Concurrent.Chan.Stream Main.Message))
+                   (ww1 :: GHC.Prim.MVar#
+                             GHC.Prim.RealWorld (Control.Concurrent.Chan.Stream Main.Message))
+                   (w :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case Control.Concurrent.Chan.$wreadChan
+                        @ Main.Message
+                        ww
+                        ww1
+                        w of ds1 { (#,#) ipv ipv1 ->
+                 case ipv1 of wild { Main.Message ds ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
+                 case ds of wild1 { Data.Text.Internal.Text dt dt1 dt2 ->
+                 case Main.listenForMessagesFromOthers4 of wild2 { Data.Text.Internal.Text dt3 dt4 dt5 ->
+                 case GHC.Prim.tagToEnum#
+                        @ GHC.Types.Bool
+                        (GHC.Prim.==# dt2 dt5) of wild3 {
+                   GHC.Types.False
+                   -> GHC.IO.Handle.Text.hPutStr2
+                        GHC.IO.Handle.FD.stdout
+                        Main.listenForMessagesFromOthers3
+                        GHC.Types.True
+                        ipv
+                   GHC.Types.True
+                   -> case {__pkg_ccall text-1.2.2.1@text-1.2.2.1-9Yh8rJoh8fO2JMLWffT3Qs _hs_text_memcmp GHC.Prim.ByteArray#
+                                                                                                         -> GHC.Prim.Word#
+                                                                                                         -> GHC.Prim.ByteArray#
+                                                                                                         -> GHC.Prim.Word#
+                                                                                                         -> GHC.Prim.Word#
+                                                                                                         -> GHC.Prim.State#
+                                                                                                              GHC.Prim.RealWorld
+                                                                                                         -> (# GHC.Prim.State#
+                                                                                                                 GHC.Prim.RealWorld,
+                                                                                                               GHC.Prim.Int# #)}
+                             dt
+                             (GHC.Prim.int2Word# dt1)
+                             dt3
+                             (GHC.Prim.int2Word# dt4)
+                             (GHC.Prim.int2Word# dt2)
+                             GHC.Prim.realWorld# of wild4 { (#,#) ds13 ds14 ->
+                      case GHC.Prim.narrow32Int# ds14 of wild5 {
+                        DEFAULT
+                        -> GHC.IO.Handle.Text.hPutStr2
+                             GHC.IO.Handle.FD.stdout
+                             Main.listenForMessagesFromOthers3
+                             GHC.Types.True
+                             ipv
+                        0#
+                        -> GHC.IO.Handle.Text.hPutStr2
+                             GHC.IO.Handle.FD.stdout
+                             Main.listenForMessagesFromOthers2
+                             GHC.Types.True
+                             ipv } } } } } } }) -}
+677a33da1b07c30eda9b88f58e525f6e
   $wrespondToMessage :: Data.Text.Internal.Text -> [GHC.Types.Char]
   {- Arity: 1, Strictness: <L,1*U(U,U,U)>, Inline: [0],
      Unfolding: (\ (w :: Data.Text.Internal.Text) ->
@@ -172,29 +369,36 @@ e0280759ac45a2e7778a271bd83f31a7
                  case Data.OldList.isPrefixOf
                         @ GHC.Types.Char
                         GHC.Classes.$fEqChar
-                        Main.respondToMessage4
+                        Main.respondToMessage5
                         stringMessage of wild {
                    GHC.Types.False
                    -> case Data.OldList.isPrefixOf
                              @ GHC.Types.Char
                              GHC.Classes.$fEqChar
-                             Main.respondToMessage3
+                             Main.respondToMessage4
                              stringMessage of wild1 {
-                        GHC.Types.False -> GHC.Types.[] @ GHC.Types.Char
+                        GHC.Types.False
+                        -> case Data.OldList.isPrefixOf
+                                  @ GHC.Types.Char
+                                  GHC.Classes.$fEqChar
+                                  Main.parseMessage12
+                                  stringMessage of wild2 {
+                             GHC.Types.False -> GHC.Types.[] @ GHC.Types.Char
+                             GHC.Types.True -> Main.respondToMessage3 }
                         GHC.Types.True
                         -> GHC.Base.++
                              @ GHC.Types.Char
                              stringMessage
                              Main.respondToMessage2 }
                    GHC.Types.True -> Main.respondToMessage1 }) -}
-72e66c544296b4dfd01cab9db0c175a5
+9c2bdae5782c992aab4708fe7777001e
   $wrunServer ::
     Foreign.C.Types.CInt
-    -> GHC.MVar.MVar Network.Socket.Types.SocketStatus
+    -> Control.Concurrent.Chan.Chan Main.Message
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
-  {- Arity: 3, Strictness: <L,U(U)><L,U(U)><S,U>, Inline: [0] -}
-7bc6b1d9e5270fc35dcbc3e648154b10
+  {- Arity: 3, Strictness: <L,U(U)><L,1*U(A,U)><S,U>, Inline: [0] -}
+d2b1456ba21777bd8fb344361c31c5b4
   $wwaitForConnection ::
     Foreign.C.Types.CInt
     -> Network.Socket.Types.Family
@@ -202,13 +406,30 @@ e0280759ac45a2e7778a271bd83f31a7
     -> Network.Socket.Types.ProtocolNumber
     -> GHC.Prim.MVar#
          GHC.Prim.RealWorld Network.Socket.Types.SocketStatus
+    -> Control.Concurrent.Chan.Chan Main.Message
     -> [Network.Socket.Types.Socket]
     -> GHC.Types.Int
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
-  {- Arity: 8,
-     Strictness: <L,U(U)><S,U><L,U><L,U(U)><S,U><L,U><L,1*U(U)><S,U>,
+  {- Arity: 9,
+     Strictness: <L,U(U)><S,U><L,U><L,U(U)><S,U><L,U(A,U)><L,U><L,1*U(U)><S,U>,
      Inline: [0] -}
+ae707930da803b3773e2a53225f25124
+  data Message
+    = Message {messageType :: Data.Text.Internal.Text,
+               clientIp :: Data.Text.Internal.Text,
+               port :: GHC.Types.Int,
+               clientName :: Data.Text.Internal.Text,
+               chatroomToJoin :: Data.Text.Internal.Text,
+               joinedChatRoom :: Data.Text.Internal.Text,
+               roomRef :: GHC.Types.Int,
+               joinId :: GHC.Types.Int,
+               errorCode :: GHC.Types.Int,
+               errorDescription :: Data.Text.Internal.Text,
+               leaveChatroom :: Data.Text.Internal.Text,
+               leftChatroom :: Data.Text.Internal.Text}
+984414f2a8dffe167650711ce575fcbb
+  type Msg = GHC.Base.String
 0b8c12b27d421ecde882d97a1b7642fc
   addNewSocket ::
     (Network.Socket.Types.Socket, Network.Socket.Types.SockAddr)
@@ -225,12 +446,190 @@ e0280759ac45a2e7778a271bd83f31a7
                  case w of ww { (,) ww1 ww2 ->
                  case w2 of ww3 { GHC.Types.I# ww4 ->
                  Main.$waddNewSocket ww1 w1 ww4 } }) -}
-1a5678e14dd29887629ca2ade032f4e0
+48eb68acfad34e63242cdff1c8b3a5c4
+  chatroomToJoin :: Main.Message -> Data.Text.Internal.Text
+  RecSel Left Main.Message
+  {- Arity: 1, HasNoCafRefs,
+     Strictness: <S(LLLLSLLLLLLL),1*U(A,A,A,A,1*U(U,U,U),A,A,A,A,A,A,A)>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Main.Message) ->
+                 case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
+                 ds5 }) -}
+5db4304bda9f8bb9c5bd7444873071e4
+  clientIp :: Main.Message -> Data.Text.Internal.Text
+  RecSel Left Main.Message
+  {- Arity: 1, HasNoCafRefs,
+     Strictness: <S(LSLLLLLLLLLL),1*U(A,1*U(U,U,U),A,A,A,A,A,A,A,A,A,A)>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Main.Message) ->
+                 case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
+                 ds2 }) -}
+53f3947f7a08e891f8aee09bd7449705
+  clientName :: Main.Message -> Data.Text.Internal.Text
+  RecSel Left Main.Message
+  {- Arity: 1, HasNoCafRefs,
+     Strictness: <S(LLLSLLLLLLLL),1*U(A,A,A,1*U(U,U,U),A,A,A,A,A,A,A,A)>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Main.Message) ->
+                 case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
+                 ds4 }) -}
+f74dcbeaf2bb0b1f45fb8e0b26987e23
+  defaultMessage :: Main.Message
+  {- Unfolding: (Main.Message
+                   Main.defaultMessage2
+                   Main.defaultMessage2
+                   Main.defaultMessage1
+                   Main.defaultMessage2
+                   Main.defaultMessage2
+                   Main.defaultMessage2
+                   Main.defaultMessage1
+                   Main.defaultMessage1
+                   Main.defaultMessage1
+                   Main.defaultMessage2
+                   Main.defaultMessage2
+                   Main.defaultMessage2) -}
+289e4c4c02a921c8f7bf58b962ec9629
+  defaultMessage1 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 0#) -}
+996c6574cc0fe2a29d8d76438115d28b
+  defaultMessage2 :: Data.Text.Internal.Text
+  {- Unfolding: (Data.Text.Show.unpackCString# "default"#) -}
+fa6e69700954705f6c4ad363ad53ef0a
+  errorCode :: Main.Message -> GHC.Types.Int
+  RecSel Left Main.Message
+  {- Arity: 1, HasNoCafRefs,
+     Strictness: <S(LLLLLLLLSLLL),1*U(A,A,A,A,A,A,A,A,1*U(U),A,A,A)>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Main.Message) ->
+                 case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
+                 ds9 }) -}
+033c1d080c4ec41338034e413f4a5d36
+  errorDescription :: Main.Message -> Data.Text.Internal.Text
+  RecSel Left Main.Message
+  {- Arity: 1, HasNoCafRefs,
+     Strictness: <S(LLLLLLLLLSLL),1*U(A,A,A,A,A,A,A,A,A,1*U(U,U,U),A,A)>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Main.Message) ->
+                 case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
+                 ds10 }) -}
+16f05992983577f003db413e90f45212
+  handleJoinChatroom ::
+    Network.Socket.Types.Socket
+    -> GHC.Base.Maybe Main.Message
+    -> Control.Concurrent.Chan.Chan Main.Message
+    -> GHC.Types.Int
+    -> GHC.Types.IO (GHC.Base.Maybe Main.Message)
+  {- Arity: 5,
+     Strictness: <L,U(U(U),A,A,A,A)><L,U><L,1*U(A,U)><S(S),1*U(1*U)><S,U>,
+     Unfolding: InlineRule (0, True, True)
+                Main.handleJoinChatroom1
+                  `cast`
+                (<Network.Socket.Types.Socket>_R
+                 ->_R <GHC.Base.Maybe Main.Message>_R
+                 ->_R <Control.Concurrent.Chan.Chan Main.Message>_R
+                 ->_R <GHC.Types.Int>_R
+                 ->_R Sym (GHC.Types.N:IO[0] <GHC.Base.Maybe Main.Message>_R)) -}
+29ae3f48de99497354b3eb4e58823faf
+  handleJoinChatroom1 ::
+    Network.Socket.Types.Socket
+    -> GHC.Base.Maybe Main.Message
+    -> Control.Concurrent.Chan.Chan Main.Message
+    -> GHC.Types.Int
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld,
+          GHC.Base.Maybe Main.Message #)
+  {- Arity: 5,
+     Strictness: <L,U(U(U),A,A,A,A)><L,U><L,1*U(A,U)><S(S),1*U(1*U)><S,U>,
+     Inline: INLINE[0],
+     Unfolding: InlineRule (5, True, False)
+                (\ (w :: Network.Socket.Types.Socket)
+                   (w1 :: GHC.Base.Maybe Main.Message)
+                   (w2 :: Control.Concurrent.Chan.Chan Main.Message)
+                   (w3 :: GHC.Types.Int)
+                   (w4 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case w3 of ww { GHC.Types.I# ww1 ->
+                 Main.$whandleJoinChatroom w w1 w2 ww1 w4 }) -}
+e9882c78feabe8c095a8263cb9270aa1
+  joinId :: Main.Message -> GHC.Types.Int
+  RecSel Left Main.Message
+  {- Arity: 1, HasNoCafRefs,
+     Strictness: <S(LLLLLLLSLLLL),1*U(A,A,A,A,A,A,A,1*U(U),A,A,A,A)>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Main.Message) ->
+                 case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
+                 ds8 }) -}
+20c6cb71e9c5724f7adf51843d2dadf2
+  joinedChatRoom :: Main.Message -> Data.Text.Internal.Text
+  RecSel Left Main.Message
+  {- Arity: 1, HasNoCafRefs,
+     Strictness: <S(LLLLLSLLLLLL),1*U(A,A,A,A,A,1*U(U,U,U),A,A,A,A,A,A)>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Main.Message) ->
+                 case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
+                 ds6 }) -}
+08922a67f295fe5e7d0c9e66e971ed67
+  leaveChatroom :: Main.Message -> Data.Text.Internal.Text
+  RecSel Left Main.Message
+  {- Arity: 1, HasNoCafRefs,
+     Strictness: <S(LLLLLLLLLLSL),1*U(A,A,A,A,A,A,A,A,A,A,1*U(U,U,U),A)>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Main.Message) ->
+                 case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
+                 ds11 }) -}
+7c8d04016dce48da6040fe7a99c8e152
+  leftChatroom :: Main.Message -> Data.Text.Internal.Text
+  RecSel Left Main.Message
+  {- Arity: 1, HasNoCafRefs,
+     Strictness: <S(LLLLLLLLLLLS),1*U(A,A,A,A,A,A,A,A,A,A,A,1*U(U,U,U))>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Main.Message) ->
+                 case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
+                 ds12 }) -}
+7004c6eadbad0f562c354aab91f70811
+  listenForMessagesFromOthers ::
+    Network.Socket.Types.Socket
+    -> Control.Concurrent.Chan.Chan Main.Message
+    -> GHC.Base.Maybe Main.Message
+    -> GHC.Types.IO ()
+  {- Arity: 4, Strictness: <L,A><S(SS),1*U(U,1*U)><L,A><S,U>,
+     Unfolding: InlineRule (0, True, True)
+                Main.listenForMessagesFromOthers1
+                  `cast`
+                (<Network.Socket.Types.Socket>_R
+                 ->_R <Control.Concurrent.Chan.Chan Main.Message>_R
+                 ->_R <GHC.Base.Maybe Main.Message>_R
+                 ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
+52f2eacbae3a6d9de1e0da6e50073698
+  listenForMessagesFromOthers1 ::
+    Network.Socket.Types.Socket
+    -> Control.Concurrent.Chan.Chan Main.Message
+    -> GHC.Base.Maybe Main.Message
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+  {- Arity: 4, Strictness: <L,A><S(SS),1*U(U,1*U)><L,A><S,U>,
+     Inline: INLINE[0],
+     Unfolding: InlineRule (4, True, False)
+                (\ (w :: Network.Socket.Types.Socket)
+                   (w1 :: Control.Concurrent.Chan.Chan Main.Message)
+                   (w2 :: GHC.Base.Maybe Main.Message)
+                   (w3 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case w1 of ww { Control.Concurrent.Chan.Chan ww1 ww2 ->
+                 Main.$wlistenForMessagesFromOthers ww1 ww2 w3 }) -}
+f215fc713cf827d1910dbb9478e1d19d
+  listenForMessagesFromOthers2 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "hi"#) -}
+030f5dce8450204946385ba756f3a4f1
+  listenForMessagesFromOthers3 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "bye"#) -}
+b8bbd4eade58e2a1d2d797bd09c6c476
+  listenForMessagesFromOthers4 :: Data.Text.Internal.Text
+  {- Unfolding: (Data.Text.Show.unpackCString# "lol omg"#) -}
+d72dfb9e3dee75597f47882e75be02cd
   main :: GHC.Types.IO ()
   {- Arity: 1, Strictness: <S,U>,
      Unfolding: InlineRule (0, True, True)
                 Main.main1 `cast` (Sym (GHC.Types.N:IO[0] <()>_R)) -}
-27506e937a02ef1361067b47617c7ef7
+5232d44a54bea4c636fd040365d812fd
   main1 ::
     GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
@@ -306,15 +705,47 @@ e0280759ac45a2e7778a271bd83f31a7
                             ww7
                             Main.main3
                             ipv8 of ds13 { (#,#) ipv10 ipv11 ->
+                     case GHC.Prim.newMVar#
+                            @ GHC.Prim.RealWorld
+                            @ (Control.Concurrent.Chan.ChItem Main.Message)
+                            ipv10 of ds14 { (#,#) ipv12 ipv13 ->
+                     case GHC.Prim.newMVar#
+                            @ GHC.Prim.RealWorld
+                            @ (GHC.MVar.MVar (Control.Concurrent.Chan.ChItem Main.Message))
+                            ipv12 of ds15 { (#,#) ipv14 ipv15 ->
+                     let {
+                       hole :: GHC.MVar.MVar (Control.Concurrent.Chan.ChItem Main.Message)
+                         {- Strictness: m -}
+                       = GHC.MVar.MVar
+                           @ (Control.Concurrent.Chan.ChItem Main.Message)
+                           ipv13
+                     } in
+                     case GHC.Prim.putMVar#
+                            @ GHC.Prim.RealWorld
+                            @ (GHC.MVar.MVar (Control.Concurrent.Chan.ChItem Main.Message))
+                            ipv15
+                            hole
+                            ipv14 of s2# { DEFAULT ->
+                     case GHC.Prim.newMVar#
+                            @ GHC.Prim.RealWorld
+                            @ (GHC.MVar.MVar (Control.Concurrent.Chan.ChItem Main.Message))
+                            s2# of ds16 { (#,#) ipv16 ipv17 ->
+                     case GHC.Prim.putMVar#
+                            @ GHC.Prim.RealWorld
+                            @ (GHC.MVar.MVar (Control.Concurrent.Chan.ChItem Main.Message))
+                            ipv17
+                            hole
+                            ipv16 of s2#1 { DEFAULT ->
                      Main.$wwaitForConnection
                        ds `cast` (Sym (Foreign.C.Types.N:CInt[0]))
                        ww2
                        ww3
                        ww4
                        ww7
+                       (Control.Concurrent.Chan.Chan @ Main.Message ipv15 ipv17)
                        (GHC.Types.[] @ Network.Socket.Types.Socket)
                        Main.main2
-                       ipv10 } } }
+                       s2#1 } } } } } } } }
                  } in
                  case GHC.Prim.narrow32Int# ds11 of wild3 {
                    DEFAULT
@@ -359,7 +790,7 @@ e0280759ac45a2e7778a271bd83f31a7
                  (GHC.Word.W16# (GHC.Prim.narrow16Word# ds1))
                    `cast`
                  (Sym (Network.Socket.Types.N:PortNumber[0])) }) -}
-a5c0b2248ed660c3e453d3d82a9f1a8e
+9e3ea095aee54a4bcf949045811b166e
   main6 ::
     GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
@@ -367,6 +798,15 @@ a5c0b2248ed660c3e453d3d82a9f1a8e
      Unfolding: (GHC.TopHandler.runMainIO1
                    @ ()
                    Main.main1 `cast` (Sym (GHC.Types.N:IO[0] <()>_R))) -}
+3c40cfcd8d681b2b4404b0b5d20dd8dd
+  messageType :: Main.Message -> Data.Text.Internal.Text
+  RecSel Left Main.Message
+  {- Arity: 1, HasNoCafRefs,
+     Strictness: <S(SLLLLLLLLLLL),1*U(1*U(U,U,U),A,A,A,A,A,A,A,A,A,A,A)>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Main.Message) ->
+                 case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
+                 ds1 }) -}
 f759b14f836623329a068c98eb8bbad5
   numberOfActiveSockets ::
     [Network.Socket.Types.Socket]
@@ -385,17 +825,179 @@ f759b14f836623329a068c98eb8bbad5
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, GHC.Types.Int #)
   {- Arity: 3, HasNoCafRefs, Strictness: <S,1*U><L,U(U)><S,U> -}
-067c7fcad93deb57ed77a3d0a59ac57f
+72942ccb1875eb0696cf64500c632aef
+  parseMessage ::
+    Data.Text.Internal.Text -> GHC.Base.Maybe Main.Message
+  {- Arity: 1, Strictness: <L,1*U(U,U,U)>,
+     Unfolding: (\ (message :: Data.Text.Internal.Text) ->
+                 let {
+                   stringMessage :: GHC.Base.String
+                   = case message of wild { Data.Text.Internal.Text dt dt1 dt2 ->
+                     let {
+                       end :: GHC.Prim.Int# = GHC.Prim.+# dt1 dt2
+                     } in
+                     letrec {
+                       $wunfold :: GHC.Prim.Int# -> [GHC.Types.Char]
+                         {- Arity: 1, Strictness: <S,U>, Inline: [0] -}
+                       = \ (ww :: GHC.Prim.Int#) ->
+                         case GHC.Prim.tagToEnum#
+                                @ GHC.Types.Bool
+                                (GHC.Prim.>=# ww end) of wild1 {
+                           GHC.Types.False
+                           -> case GHC.Prim.indexWord16Array# dt ww of r# { DEFAULT ->
+                              case GHC.Prim.tagToEnum#
+                                     @ GHC.Types.Bool
+                                     (GHC.Prim.geWord# r# 55296##) of wild2 {
+                                GHC.Types.False
+                                -> GHC.Types.:
+                                     @ GHC.Types.Char
+                                     (GHC.Types.C# (GHC.Prim.chr# (GHC.Prim.word2Int# r#)))
+                                     ($wunfold (GHC.Prim.+# ww 1#))
+                                GHC.Types.True
+                                -> case GHC.Prim.tagToEnum#
+                                          @ GHC.Types.Bool
+                                          (GHC.Prim.leWord# r# 56319##) of wild3 {
+                                     GHC.Types.False
+                                     -> GHC.Types.:
+                                          @ GHC.Types.Char
+                                          (GHC.Types.C# (GHC.Prim.chr# (GHC.Prim.word2Int# r#)))
+                                          ($wunfold (GHC.Prim.+# ww 1#))
+                                     GHC.Types.True
+                                     -> case GHC.Prim.indexWord16Array#
+                                               dt
+                                               (GHC.Prim.+# ww 1#) of r#1 { DEFAULT ->
+                                        GHC.Types.:
+                                          @ GHC.Types.Char
+                                          (GHC.Types.C#
+                                             (GHC.Prim.chr#
+                                                (GHC.Prim.+#
+                                                   (GHC.Prim.+#
+                                                      (GHC.Prim.uncheckedIShiftL#
+                                                         (GHC.Prim.-#
+                                                            (GHC.Prim.word2Int# r#)
+                                                            55296#)
+                                                         10#)
+                                                      (GHC.Prim.-# (GHC.Prim.word2Int# r#1) 56320#))
+                                                   65536#)))
+                                          ($wunfold (GHC.Prim.+# ww 2#)) } } } }
+                           GHC.Types.True -> GHC.Types.[] @ GHC.Types.Char }
+                     } in
+                     $wunfold dt1 }
+                 } in
+                 case Data.OldList.isPrefixOf
+                        @ GHC.Types.Char
+                        GHC.Classes.$fEqChar
+                        Main.parseMessage12
+                        stringMessage of wild {
+                   GHC.Types.False
+                   -> case Data.OldList.isPrefixOf
+                             @ GHC.Types.Char
+                             GHC.Classes.$fEqChar
+                             Main.parseMessage11
+                             stringMessage of wild1 {
+                        GHC.Types.False
+                        -> case Data.OldList.isPrefixOf
+                                  @ GHC.Types.Char
+                                  GHC.Classes.$fEqChar
+                                  Main.parseMessage10
+                                  stringMessage of wild2 {
+                             GHC.Types.False -> GHC.Base.Nothing @ Main.Message
+                             GHC.Types.True -> Main.parseMessage7 }
+                        GHC.Types.True -> Main.parseMessage4 }
+                   GHC.Types.True -> Main.parseMessage1 }) -}
+2bd248493df282d0684080ed52936796
+  parseMessage1 :: GHC.Base.Maybe Main.Message
+  {- Strictness: m2,
+     Unfolding: (GHC.Base.Just @ Main.Message Main.parseMessage2) -}
+8ffb6cadf6cbd434072991e5087b61ec
+  parseMessage10 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "CHAT"#) -}
+07dc1306467839887d3bf250d26d12d8
+  parseMessage11 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "LEAVE_CHATROOM"#) -}
+357f832bc17d47b96058e669f3dbfbd0
+  parseMessage12 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "JOIN_CHATROOM"#) -}
+e64f9c986dfc9b98d4f6019260c3df1f
+  parseMessage2 :: Main.Message
+  {- Unfolding: (Main.Message
+                   Main.parseMessage3
+                   Main.defaultMessage2
+                   Main.defaultMessage1
+                   Main.defaultMessage2
+                   Main.defaultMessage2
+                   Main.defaultMessage2
+                   Main.defaultMessage1
+                   Main.defaultMessage1
+                   Main.defaultMessage1
+                   Main.defaultMessage2
+                   Main.defaultMessage2
+                   Main.defaultMessage2) -}
+d3f4e8eb80f7fea01e25d654bdc5b335
+  parseMessage3 :: Data.Text.Internal.Text
+  {- Unfolding: (Data.Text.Show.unpackCString# "JOIN_CHATROOM"#) -}
+03eeb50306ece4b4bbabf347527e7fd3
+  parseMessage4 :: GHC.Base.Maybe Main.Message
+  {- Strictness: m2,
+     Unfolding: (GHC.Base.Just @ Main.Message Main.parseMessage5) -}
+47cb1e4e73a65823e12b0feade9e4661
+  parseMessage5 :: Main.Message
+  {- Unfolding: (Main.Message
+                   Main.parseMessage6
+                   Main.defaultMessage2
+                   Main.defaultMessage1
+                   Main.defaultMessage2
+                   Main.defaultMessage2
+                   Main.defaultMessage2
+                   Main.defaultMessage1
+                   Main.defaultMessage1
+                   Main.defaultMessage1
+                   Main.defaultMessage2
+                   Main.defaultMessage2
+                   Main.defaultMessage2) -}
+7812398562571681f0e5d7cdaab06e40
+  parseMessage6 :: Data.Text.Internal.Text
+  {- Unfolding: (Data.Text.Show.unpackCString# "LEAVE_CHATROOM"#) -}
+4b33731c7d31b92e01fe0324c42df2a6
+  parseMessage7 :: GHC.Base.Maybe Main.Message
+  {- Strictness: m2,
+     Unfolding: (GHC.Base.Just @ Main.Message Main.parseMessage8) -}
+b3edc62e95691fe1deae308a0b6453e0
+  parseMessage8 :: Main.Message
+  {- Unfolding: (Main.Message
+                   Main.parseMessage9
+                   Main.defaultMessage2
+                   Main.defaultMessage1
+                   Main.defaultMessage2
+                   Main.defaultMessage2
+                   Main.defaultMessage2
+                   Main.defaultMessage1
+                   Main.defaultMessage1
+                   Main.defaultMessage1
+                   Main.defaultMessage2
+                   Main.defaultMessage2
+                   Main.defaultMessage2) -}
+24249c29b1eabee3f7a2c584288ff0e2
+  parseMessage9 :: Data.Text.Internal.Text
+  {- Unfolding: (Data.Text.Show.unpackCString# "CHAT"#) -}
+e7f6f8e4cc770e36d114449771f2816e
+  port :: Main.Message -> GHC.Types.Int
+  RecSel Left Main.Message
+  {- Arity: 1, HasNoCafRefs,
+     Strictness: <S(LLSLLLLLLLLL),1*U(A,A,1*U(U),A,A,A,A,A,A,A,A,A)>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Main.Message) ->
+                 case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
+                 ds3 }) -}
+17f98b46f21c254ffbc5eac36910b347
   respondToMessage ::
     Network.Socket.Types.SockAddr
-    -> GHC.Base.String -> Data.Text.Internal.Text -> GHC.Base.String
-  {- Arity: 3, Strictness: <L,A><L,A><L,1*U(U,U,U)>,
-     Inline: INLINE[0],
-     Unfolding: InlineRule (3, True, True)
+    -> Data.Text.Internal.Text -> GHC.Base.String
+  {- Arity: 2, Strictness: <L,A><L,1*U(U,U,U)>, Inline: INLINE[0],
+     Unfolding: InlineRule (2, True, True)
                 (\ (w :: Network.Socket.Types.SockAddr)
-                   (w1 :: GHC.Base.String)
-                   (w2 :: Data.Text.Internal.Text) ->
-                 Main.$wrespondToMessage w2) -}
+                   (w1 :: Data.Text.Internal.Text) ->
+                 Main.$wrespondToMessage w1) -}
 ed1e735d53821e0ab05ceffc61e0273d
   respondToMessage1 :: [GHC.Types.Char]
   {- Unfolding: (GHC.CString.unpackCString# "die"#) -}
@@ -406,69 +1008,91 @@ ed1e735d53821e0ab05ceffc61e0273d
                    \IP:178.62.42.127\n\
                    \Port:4243\n\
                    \StudentID:13330379\n"#) -}
-608deedf5d8f02f49d75be7c023a7c8b
+578855257289beb1f99da60764d3b314
   respondToMessage3 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString# "HELO"#) -}
-47f15bfb638f7c3ccbd8421864a93f5f
+  {- Unfolding: (GHC.CString.unpackCString# "join"#) -}
+c2227349cb92c1568ec0c52b2a3256c4
   respondToMessage4 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "HELO"#) -}
+e1d542abc8db98ac2a733bf9615a6498
+  respondToMessage5 :: [GHC.Types.Char]
   {- Unfolding: (GHC.CString.unpackCString# "KILL_SERVICE"#) -}
-ca1e20be1abc6397924462f6d610c35f
+69dd3c1c79b6f6a37c050cce993daaa6
+  roomRef :: Main.Message -> GHC.Types.Int
+  RecSel Left Main.Message
+  {- Arity: 1, HasNoCafRefs,
+     Strictness: <S(LLLLLLSLLLLL),1*U(A,A,A,A,A,A,1*U(U),A,A,A,A,A)>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Main.Message) ->
+                 case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
+                 ds7 }) -}
+a70200c7e5b0c80cfcdc42b4927d2407
   runServer ::
     (Network.Socket.Types.Socket, Network.Socket.Types.SockAddr)
-    -> GHC.Types.IO ()
-  {- Arity: 2, Strictness: <S(SL),1*U(1*U(U(U),A,A,A,U(U)),A)><S,U>,
+    -> Control.Concurrent.Chan.Chan Main.Message -> GHC.Types.IO ()
+  {- Arity: 3,
+     Strictness: <S(SL),1*U(1*U(U(U),A,A,A,A),A)><L,1*U(A,U)><S,U>,
      Unfolding: InlineRule (0, True, True)
                 Main.runServer1
                   `cast`
                 (<(Network.Socket.Types.Socket, Network.Socket.Types.SockAddr)>_R
+                 ->_R <Control.Concurrent.Chan.Chan Main.Message>_R
                  ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
-cdde12ba18eb6dea2b43fb56c45c2c01
+f4ada9d32c22a73053b47d1e6a26402a
   runServer1 ::
     (Network.Socket.Types.Socket, Network.Socket.Types.SockAddr)
+    -> Control.Concurrent.Chan.Chan Main.Message
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
-  {- Arity: 2, Strictness: <S(SL),1*U(1*U(U(U),A,A,A,U(U)),A)><S,U>,
+  {- Arity: 3,
+     Strictness: <S(SL),1*U(1*U(U(U),A,A,A,A),A)><L,1*U(A,U)><S,U>,
      Inline: INLINE[0],
-     Unfolding: InlineRule (2, True, False)
+     Unfolding: InlineRule (3, True, False)
                 (\ (w :: (Network.Socket.Types.Socket,
                           Network.Socket.Types.SockAddr))
-                   (w1 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                   (w1 :: Control.Concurrent.Chan.Chan Main.Message)
+                   (w2 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
                  case w of ww { (,) ww1 ww2 ->
                  case ww1 of ww3 { Network.Socket.Types.MkSocket ww4 ww5 ww6 ww7 ww8 ->
-                 Main.$wrunServer ww4 ww8 w1 } }) -}
-2038912575da82b418675b9c92603411
+                 Main.$wrunServer ww4 w1 w2 } }) -}
+ea2b7c9d65eb516fb617b8037519ef14
   waitForConnection ::
     Network.Socket.Types.Socket
+    -> Control.Concurrent.Chan.Chan Main.Message
     -> [Network.Socket.Types.Socket]
     -> GHC.Types.Int
     -> GHC.Types.IO ()
-  {- Arity: 4,
-     Strictness: <S(LSLLS(S)),1*U(U(U),U,U,U(U),U(U))><L,U><L,1*U(U)><S,U>,
+  {- Arity: 5,
+     Strictness: <S(LSLLS(S)),1*U(U(U),U,U,U(U),U(U))><L,U(A,U)><L,U><L,1*U(U)><S,U>,
      Unfolding: InlineRule (0, True, True)
                 Main.waitForConnection1
                   `cast`
                 (<Network.Socket.Types.Socket>_R
+                 ->_R <Control.Concurrent.Chan.Chan Main.Message>_R
                  ->_R <[Network.Socket.Types.Socket]>_R
                  ->_R <GHC.Types.Int>_R
                  ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
-34a7e66315876d8372f8f15cc5a67c2f
+0c058723fa45b3584f906ccaae815426
   waitForConnection1 ::
     Network.Socket.Types.Socket
+    -> Control.Concurrent.Chan.Chan Main.Message
     -> [Network.Socket.Types.Socket]
     -> GHC.Types.Int
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
-  {- Arity: 4,
-     Strictness: <S(LSLLS(S)),1*U(U(U),U,U,U(U),U(U))><L,U><L,1*U(U)><S,U>,
+  {- Arity: 5,
+     Strictness: <S(LSLLS(S)),1*U(U(U),U,U,U(U),U(U))><L,U(A,U)><L,U><L,1*U(U)><S,U>,
      Inline: INLINE[0],
-     Unfolding: InlineRule (4, True, False)
+     Unfolding: InlineRule (5, True, False)
                 (\ (w :: Network.Socket.Types.Socket)
-                   (w1 :: [Network.Socket.Types.Socket])
-                   (w2 :: GHC.Types.Int)
-                   (w3 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                   (w1 :: Control.Concurrent.Chan.Chan Main.Message)
+                   (w2 :: [Network.Socket.Types.Socket])
+                   (w3 :: GHC.Types.Int)
+                   (w4 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
                  case w of ww { Network.Socket.Types.MkSocket ww1 ww2 ww3 ww4 ww5 ->
                  case ww5 of ww6 { GHC.MVar.MVar ww7 ->
-                 Main.$wwaitForConnection ww1 ww2 ww3 ww4 ww7 w1 w2 w3 } }) -}
+                 Main.$wwaitForConnection ww1 ww2 ww3 ww4 ww7 w1 w2 w3 w4 } }) -}
+instance GHC.Show.Show [Main.Message] = Main.$fShowMessage
 vectorised variables:
 vectorised tycons:
 vectorised reused tycons:
