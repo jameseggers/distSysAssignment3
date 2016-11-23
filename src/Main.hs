@@ -10,6 +10,9 @@ import Control.Concurrent
 import Control.Concurrent.Chan
 import Network.Info
 import Data.Maybe
+import System.IO.Unsafe  -- be careful!
+import System.Random
+import Data.Hashable
 
 type Msg = String
 
@@ -64,31 +67,42 @@ runServer (sock, addr) channel = do
   ret <- case (messageType (fromJust parsedMessage)) of
     "JOIN_CHATROOM" -> handleJoinChatroom sock parsedMessage channel 1
     -- "CHAT" -> handleChat sock parsedMessage channel
-  putStrLn $ show (fromJust ret)
-  -- runServer (sock,addr) channel
+  runServer (sock,addr) channel
 
-listenForMessagesFromOthers :: Socket -> Chan Message -> Maybe Message -> IO ()
-listenForMessagesFromOthers sock channel message = do
+listenForMessagesFromOthers :: Socket -> Chan Message -> Int -> Maybe Message -> IO ()
+listenForMessagesFromOthers sock channel chatroomRef message = do
   receivedMessage <- readChan channel
-  if (messageType receivedMessage) == "lol omg"
-    then putStrLn "hi"
-    else putStrLn "bye"
+  if (roomRef receivedMessage) == chatroomRef
+    then dealWithChannelMessage sock channel receivedMessage
+    else (send sock "")
+  listenForMessagesFromOthers sock channel chatroomRef message
+
+dealWithChannelMessage :: Socket -> Chan Message -> Message -> IO Int
+dealWithChannelMessage sock channel receivedMessage = do
+  let reply = case (messageType receivedMessage) of
+                "JOINED_CHATROOM" -> ("JOINED_CHATROOM:"++(unpack (joinedChatRoom receivedMessage))++"\nSERVER_IP:#{server_ip}\nPORT:0\nROOM_REF:1\nJOIN_ID:#{user_reference}\n")
+  send sock reply
 
 -- handleChat :: Socket -> Maybe Message -> Chan Message -> IO ()
 -- handleChat sock message channel
 
 handleJoinChatroom :: Socket -> Maybe Message -> Chan Message -> Int -> IO (Maybe Message)
--- handleJoinChatroom _ Nothing _ _ = return Nothing
+handleJoinChatroom _ Nothing _ _ = return Nothing
 handleJoinChatroom sock message channel 4 = do
   newChannel <- dupChan channel
-  forkIO (listenForMessagesFromOthers sock newChannel message)
-  send sock (unpack "hi")--(show $ fromJust message)
+  let justMessage = fromJust message
+  let roomReference = hash $ unpack $ (chatroomToJoin justMessage)
+  forkIO (listenForMessagesFromOthers sock newChannel roomReference message)
+  let reply = Message { messageType = "JOINED_CHATROOM", clientIp = "123", port = 4342, clientName = "james",
+joinedChatRoom = (joinedChatRoom justMessage), roomRef = roomReference, joinId = 1 }
+  writeChan channel reply
   return message
+
 handleJoinChatroom sock message channel numMessagesReceived = do
   messageReceived <- recv sock 4096
-  let messageValue = pack $ (splitOn ":" messageReceived) !! 1
+  let messageValue = pack $ ((splitOn ":" messageReceived) !! 1)
   let newMessage = case numMessagesReceived of
-                      1 -> Just actualMessage { clientIp = "0" }
+                      1 -> Just actualMessage { clientIp = "0", joinedChatRoom = (chatroomToJoin actualMessage) }
                       2 -> Just actualMessage { port = 0 }
                       3 -> Just actualMessage { clientName = messageValue }
   handleJoinChatroom sock newMessage channel newNumMessagesReceived
@@ -97,25 +111,8 @@ handleJoinChatroom sock message channel numMessagesReceived = do
 
 parseMessage :: Text -> Maybe Message
 parseMessage message
-  | Data.List.isPrefixOf "JOIN_CHATROOM" stringMessage = Just defaultMessage { messageType = "JOIN_CHATROOM" }
-  | Data.List.isPrefixOf "LEAVE_CHATROOM" stringMessage = Just defaultMessage { messageType = "LEAVE_CHATROOM" }
-  | Data.List.isPrefixOf "CHAT" stringMessage = Just defaultMessage { messageType = "CHAT"}
+  | Data.List.isPrefixOf "JOIN_CHATROOM" stringMessage = Just Message { messageType = "JOIN_CHATROOM", chatroomToJoin = message }
+  | Data.List.isPrefixOf "LEAVE_CHATROOM" stringMessage = Just Message { messageType = "LEAVE_CHATROOM" }
+  | Data.List.isPrefixOf "CHAT" stringMessage = Just Message { messageType = "CHAT"}
   | otherwise = Nothing
   where stringMessage = unpack message
-
-respondToMessage :: SockAddr -> Text -> String
-respondToMessage addr message
-  | (Data.List.isPrefixOf "KILL_SERVICE" stringMessage) = "die"
-  | (Data.List.isPrefixOf "HELO" stringMessage) = stringMessage++"\nIP:178.62.42.127\nPort:"++justPort++"\nStudentID:13330379\n"
-  | (Data.List.isPrefixOf "JOIN_CHATROOM" stringMessage) = "join"
-  | otherwise = ""
-  where address = (show addr)
-        splitedAddress = splitOn ":" address
-        justPort = "4243"
-        stringMessage = unpack message
-
-defaultMessage :: Message
-defaultMessage = Message { messageType = "default", clientIp = "default",
-port = 0, clientName = "default", chatroomToJoin = "default", joinedChatRoom = "default",
-roomRef = 0, joinId = 0, errorCode = 0, errorDescription = "default",
-leaveChatroom = "default", leftChatroom = "default" }

@@ -21,6 +21,13 @@
   (major1) == 0 && (major2) <  10 || \
   (major1) == 0 && (major2) == 10 && (minor) <= 8)
 
+/* package hashable-1.2.4.0 */
+#define VERSION_hashable "1.2.4.0"
+#define MIN_VERSION_hashable(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  2 || \
+  (major1) == 1 && (major2) == 2 && (minor) <= 4)
+
 /* package network-2.6.3.1 */
 #define VERSION_network "2.6.3.1"
 #define MIN_VERSION_network(major1,major2,minor) (\
@@ -34,6 +41,13 @@
   (major1) <  0 || \
   (major1) == 0 && (major2) <  2 || \
   (major1) == 0 && (major2) == 2 && (minor) <= 0)
+
+/* package random-1.1 */
+#define VERSION_random "1.1"
+#define MIN_VERSION_random(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  1 || \
+  (major1) == 1 && (major2) == 1 && (minor) <= 0)
 
 /* package split-0.2.3.1 */
 #define VERSION_split "0.2.3.1"
