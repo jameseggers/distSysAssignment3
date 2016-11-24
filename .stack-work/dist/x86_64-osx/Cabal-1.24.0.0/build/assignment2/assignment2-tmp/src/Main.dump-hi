@@ -1,11 +1,11 @@
 
 ==================== FINAL INTERFACE ====================
-2016-11-23 21:15:59.782645 UTC
+2016-11-24 16:53:55.486745 UTC
 
 interface main@main:Main 8001
-  interface hash: b0ac2f17aef9f42fbf4e94f113d806ed
-  ABI hash: eadeacb9fceec6ce65c2846ee17fceaa
-  export-list hash: e0e3866232b173aaa0bec43d5e219364
+  interface hash: 166b642c4964b25ccaf3d9e903330380
+  ABI hash: 038de2ad0ee62c3805f0c227b00a4d55
+  export-list hash: 61659873f9070ac5322be7229f1cba45
   orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
   flag hash: 5a8008075d597e82966edd93f13cccaa
   sig of: Nothing
@@ -14,6 +14,7 @@ interface main@main:Main 8001
 exports:
   Main.addNewSocket
   Main.dealWithChannelMessage
+  Main.getJoinedRoomMessage
   Main.handleJoinChatroom
   Main.handleLeaveChatroom
   Main.listenForMessagesFromOthers
@@ -248,7 +249,7 @@ d6831ef04cb9301b090dfae6f7bb7ec7
                            ww
                            (GHC.Types.[] @ Network.Socket.Types.Socket))
                    GHC.Types.True -> w } }) -}
-1067ae0c6408687bf8f2c8305429d13a
+909b7ae0ecf61676fe5c488b57c2193b
   $wdealWithChannelMessage ::
     Network.Socket.Types.Socket
     -> GHC.Prim.ByteArray#
@@ -258,10 +259,9 @@ d6831ef04cb9301b090dfae6f7bb7ec7
     -> GHC.Types.Int
     -> GHC.Types.Int
     -> GHC.Prim.State# GHC.Prim.RealWorld
-    -> (# GHC.Prim.State# GHC.Prim.RealWorld,
-          GHC.Base.Maybe GHC.Types.Int #)
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
   {- Arity: 8,
-     Strictness: <L,U(U(U),A,A,A,A)><S,U><S,U><S,U><L,1*U(U,U,U)><L,1*U(U)><L,1*U(U)><S,U>,
+     Strictness: <L,U(U(U),A,A,A,A)><S,U><S,U><S,U><L,1*U(U,U,U)><L,U(U)><L,U(U)><S,U>,
      Inline: [0] -}
 8e239030c87729d37f1d8cb569d793ef
   $wlistenForMessagesFromOthers ::
@@ -275,6 +275,17 @@ d6831ef04cb9301b090dfae6f7bb7ec7
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
   {- Arity: 5,
      Strictness: <L,U(U(U),A,A,A,A)><S,U><S,U><L,1*U(U)><S,U>,
+     Inline: [0] -}
+ec33fda3e39f239787ac4548363a1be4
+  $wouter ::
+    Data.Text.Array.MArray GHC.Prim.RealWorld
+    -> GHC.Types.Int
+    -> [GHC.Types.Char]
+    -> GHC.Prim.Int#
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld,
+          Data.Text.Internal.Text #)
+  {- Arity: 5, Strictness: <L,U(U)><L,U(U)><S,1*U><S,U><S,U>,
      Inline: [0] -}
 950b0a20558c16dfc6de2599e88c9700
   $wrunServer ::
@@ -367,31 +378,30 @@ f2b694df87d6fe636fa21415ad08fd48
                 (\ (ds :: Main.Message) ->
                  case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
                  ds4 }) -}
-5ccd4f4efec198dd8c4a286586072b5d
+8254a6c5feda1c8dbc448ae09bf1813e
   dealWithChannelMessage ::
     Network.Socket.Types.Socket
     -> Control.Concurrent.Chan.Chan Main.Message
     -> Main.Message
-    -> GHC.Types.IO (GHC.Base.Maybe GHC.Types.Int)
+    -> GHC.Types.IO ()
   {- Arity: 4,
-     Strictness: <L,U(U(U),A,A,A,A)><L,A><S(S(SSS)LLLLLLLLLLL),1*U(1*U(U,U,U),A,A,A,A,1*U(U,U,U),1*U(U),1*U(U),A,A,A,A)><S,U>,
+     Strictness: <L,U(U(U),A,A,A,A)><L,A><S(S(SSS)LLLLLLLLLLL),1*U(1*U(U,U,U),A,A,A,A,1*U(U,U,U),U(U),U(U),A,A,A,A)><S,U>,
      Unfolding: InlineRule (0, True, True)
                 Main.dealWithChannelMessage1
                   `cast`
                 (<Network.Socket.Types.Socket>_R
                  ->_R <Control.Concurrent.Chan.Chan Main.Message>_R
                  ->_R <Main.Message>_R
-                 ->_R Sym (GHC.Types.N:IO[0] <GHC.Base.Maybe GHC.Types.Int>_R)) -}
-d784ebb4f97106b32e78ee1f6a5c2fe8
+                 ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
+0a6b04bede220644937c67c98cc38e27
   dealWithChannelMessage1 ::
     Network.Socket.Types.Socket
     -> Control.Concurrent.Chan.Chan Main.Message
     -> Main.Message
     -> GHC.Prim.State# GHC.Prim.RealWorld
-    -> (# GHC.Prim.State# GHC.Prim.RealWorld,
-          GHC.Base.Maybe GHC.Types.Int #)
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
   {- Arity: 4,
-     Strictness: <L,U(U(U),A,A,A,A)><L,A><S(S(SSS)LLLLLLLLLLL),1*U(1*U(U,U,U),A,A,A,A,1*U(U,U,U),1*U(U),1*U(U),A,A,A,A)><S,U>,
+     Strictness: <L,U(U(U),A,A,A,A)><L,A><S(S(SSS)LLLLLLLLLLL),1*U(1*U(U,U,U),A,A,A,A,1*U(U,U,U),U(U),U(U),A,A,A,A)><S,U>,
      Inline: INLINE[0],
      Unfolding: InlineRule (4, True, False)
                 (\ (w :: Network.Socket.Types.Socket)
@@ -427,6 +437,10 @@ d784ebb4f97106b32e78ee1f6a5c2fe8
                 (\ (ds :: Main.Message) ->
                  case ds of wild { Main.Message ds1 ds2 ds3 ds4 ds5 ds6 ds7 ds8 ds9 ds10 ds11 ds12 ->
                  ds10 }) -}
+eddfc829fab5f03bdd2b3b003eced5c8
+  getJoinedRoomMessage :: Main.Message -> GHC.Base.String
+  {- Arity: 1,
+     Strictness: <L,1*U(A,A,A,A,A,1*U(U,U,U),1*U(U),1*U(U),A,A,A,A)> -}
 8f83d09dff584e0e3500f5e57b3dc42b
   handleJoinChatroom ::
     Network.Socket.Types.Socket
@@ -745,7 +759,7 @@ f759b14f836623329a068c98eb8bbad5
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, GHC.Types.Int #)
   {- Arity: 3, HasNoCafRefs, Strictness: <S,1*U><L,U(U)><S,U> -}
-b5b2b5066adcae95a1e0d536c6ce757a
+9cf4614e084ef7d4eea3334364eecbf2
   parseMessage ::
     Data.Text.Internal.Text -> GHC.Base.Maybe Main.Message
   {- Arity: 1, Strictness: <L,U(U,U,U)>,
@@ -807,56 +821,74 @@ b5b2b5066adcae95a1e0d536c6ce757a
                  case Data.OldList.isPrefixOf
                         @ GHC.Types.Char
                         GHC.Classes.$fEqChar
-                        Main.parseMessage42
+                        Main.parseMessage45
                         stringMessage of wild {
                    GHC.Types.False
                    -> case Data.OldList.isPrefixOf
                              @ GHC.Types.Char
                              GHC.Classes.$fEqChar
-                             Main.parseMessage41
+                             Main.parseMessage44
                              stringMessage of wild1 {
                         GHC.Types.False
                         -> case Data.OldList.isPrefixOf
                                   @ GHC.Types.Char
                                   GHC.Classes.$fEqChar
-                                  Main.parseMessage40
+                                  Main.parseMessage43
                                   stringMessage of wild2 {
                              GHC.Types.False -> GHC.Base.Nothing @ Main.Message
-                             GHC.Types.True -> Main.parseMessage26 }
+                             GHC.Types.True -> Main.parseMessage29 }
                         GHC.Types.True
                         -> GHC.Base.Just
                              @ Main.Message
                              (Main.Message
+                                Main.parseMessage28
+                                Main.parseMessage27
+                                Main.parseMessage26
                                 Main.parseMessage25
                                 Main.parseMessage24
                                 Main.parseMessage23
-                                Main.parseMessage22
-                                Main.parseMessage21
-                                Main.parseMessage20
                                 (case Text.Read.readEither6
                                         @ GHC.Types.Int
                                         (Text.ParserCombinators.ReadP.run
                                            @ GHC.Types.Int
-                                           Main.parseMessage19
+                                           Main.parseMessage22
                                            stringMessage) of wild2 {
-                                   [] -> Main.parseMessage18
+                                   [] -> Main.parseMessage21
                                    : x ds
                                    -> case ds of wild3 {
-                                        [] -> x : ipv ipv1 -> Main.parseMessage17 } })
+                                        [] -> x : ipv ipv1 -> Main.parseMessage20 } })
+                                Main.parseMessage19
+                                Main.parseMessage18
+                                Main.parseMessage17
                                 Main.parseMessage16
-                                Main.parseMessage15
-                                Main.parseMessage14
-                                Main.parseMessage13
-                                Main.parseMessage12) }
+                                Main.parseMessage15) }
                    GHC.Types.True
                    -> GHC.Base.Just
                         @ Main.Message
                         (Main.Message
+                           Main.parseMessage14
+                           Main.parseMessage13
+                           Main.parseMessage12
                            Main.parseMessage11
-                           Main.parseMessage10
-                           Main.parseMessage9
-                           Main.parseMessage8
-                           message
+                           (case GHC.List.$w!!
+                                   @ [GHC.Types.Char]
+                                   (Main.parseMessage9 stringMessage)
+                                   1# of dt { DEFAULT ->
+                            case GHC.Magic.runRW#
+                                   @ 'GHC.Types.PtrRepLifted
+                                   @ Data.Text.Internal.Text
+                                   (\ (s1 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                                    case GHC.Prim.newByteArray#
+                                           @ GHC.Prim.RealWorld
+                                           8#
+                                           s1 of ds1 { (#,#) ipv ipv1 ->
+                                    Main.$wouter
+                                      (Data.Text.Array.MArray @ GHC.Prim.RealWorld ipv1)
+                                      Main.parseMessage8
+                                      dt
+                                      0#
+                                      ipv }) of ds1 { (#,#) ipv ipv1 ->
+                            ipv1 } })
                            Main.parseMessage7
                            Main.parseMessage6
                            Main.parseMessage5
@@ -867,35 +899,47 @@ b5b2b5066adcae95a1e0d536c6ce757a
 005f1975cfa4028b60ca86a4c09baeed
   parseMessage1 :: Data.Text.Internal.Text
   {- Strictness: x -}
-9c78b6901126f89b82c2662801c309fb
-  parseMessage10 :: Data.Text.Internal.Text
-  {- Strictness: x -}
-da22ccd4a6625a6df773d9ab05100b0c
+479aea1257fc5b3e493daa5153d41000
+  parseMessage10 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# ":"#) -}
+c1dd42e19aba3c6f5d9de13fd30a2152
   parseMessage11 :: Data.Text.Internal.Text
-  {- Unfolding: (Data.Text.Show.unpackCString# "JOIN_CHATROOM"#) -}
-f97956ebc12c73b03b62aab474818a24
-  parseMessage12 :: Data.Text.Internal.Text
+  {- Strictness: x -}
+12869773b44145bdb74d1855f9b8e283
+  parseMessage12 :: GHC.Types.Int
   {- Strictness: x -}
 0739fcd0c0e552a3a7568dc196348b13
   parseMessage13 :: Data.Text.Internal.Text
   {- Strictness: x -}
-a90166bf0e0f2ebc5a288017d266911b
+6950618ca1eaa548dda867518e1301bf
   parseMessage14 :: Data.Text.Internal.Text
+  {- Unfolding: (Data.Text.Show.unpackCString# "JOIN_CHATROOM"#) -}
+208c58c9127e5f7436e1bd71bf409d19
+  parseMessage15 :: Data.Text.Internal.Text
   {- Strictness: x -}
-9073087adaa614c4e638f4e047d2ebaa
-  parseMessage15 :: GHC.Types.Int
+0a4702e7337a3fca8ba2c3c9b1464355
+  parseMessage16 :: Data.Text.Internal.Text
   {- Strictness: x -}
-ad2fa35494b0d775beec688269f99b5f
-  parseMessage16 :: GHC.Types.Int
-  {- Strictness: x -}
-831602b448b1549bd9da6dc88e5b5643
-  parseMessage17 :: GHC.Types.Int
+77449c830673cd7a79e5f109e22cdd90
+  parseMessage17 :: Data.Text.Internal.Text
   {- Strictness: x -}
 2834faad24ac08c8bc6868d4e6b189d1
   parseMessage18 :: GHC.Types.Int
   {- Strictness: x -}
-da44deeba784f149d6f7ef17aea93d79
-  parseMessage19 :: Text.ParserCombinators.ReadP.P GHC.Types.Int
+1d0739960b0d316948820d5967de8b68
+  parseMessage19 :: GHC.Types.Int
+  {- Strictness: x -}
+6d4a96381fd9a9f906c5c554a436c4a1
+  parseMessage2 :: Data.Text.Internal.Text
+  {- Strictness: x -}
+ffe0aea953241c6710ef416f175800f9
+  parseMessage20 :: GHC.Types.Int
+  {- Strictness: x -}
+6717d8b00067d60f70b3808dc28a53d6
+  parseMessage21 :: GHC.Types.Int
+  {- Strictness: x -}
+0d9825e259605b79a91cec86938022aa
+  parseMessage22 :: Text.ParserCombinators.ReadP.P GHC.Types.Int
   {- Unfolding: ((GHC.Read.$fReadInt3
                     GHC.Read.$fReadInt_$sconvertInt
                     Text.ParserCombinators.ReadPrec.minPrec)
@@ -903,34 +947,37 @@ da44deeba784f149d6f7ef17aea93d79
                  (Text.ParserCombinators.ReadP.N:ReadP[0] <GHC.Types.Int>_R)
                    @ GHC.Types.Int
                    (Text.Read.readEither5 @ GHC.Types.Int)) -}
-6d4a96381fd9a9f906c5c554a436c4a1
-  parseMessage2 :: Data.Text.Internal.Text
-  {- Strictness: x -}
-6681f4046e78aee03822e383476e1d4f
-  parseMessage20 :: Data.Text.Internal.Text
-  {- Strictness: x -}
-d03bf48c46d196b1fde01352754fb158
-  parseMessage21 :: Data.Text.Internal.Text
-  {- Strictness: x -}
-16fcb328265858780ede561a8eb39c44
-  parseMessage22 :: Data.Text.Internal.Text
-  {- Strictness: x -}
-c9f425104a3927044a1db1f8e6a8b00a
-  parseMessage23 :: GHC.Types.Int
+898808e3fedbdfa7d82ea43817c0cc11
+  parseMessage23 :: Data.Text.Internal.Text
   {- Strictness: x -}
 f73878d58cb0ad8e1d9e3d9a90d55dbc
   parseMessage24 :: Data.Text.Internal.Text
   {- Strictness: x -}
-4fb9a7bffd975b5023bbff3d1f009f76
+8f560b24a50ebfea17d302b4b91d5024
   parseMessage25 :: Data.Text.Internal.Text
+  {- Strictness: x -}
+1c441ea76c672938949f8eedf86edef3
+  parseMessage26 :: GHC.Types.Int
+  {- Strictness: x -}
+40c168066e471cb75149f47efcdb621d
+  parseMessage27 :: Data.Text.Internal.Text
+  {- Strictness: x -}
+2eb58c6cd1f516875295a69e28c5c5b1
+  parseMessage28 :: Data.Text.Internal.Text
   {- Unfolding: (Data.Text.Show.unpackCString# "LEAVE_CHATROOM"#) -}
-8be41e18a1aa873694d258ec46937b87
-  parseMessage26 :: GHC.Base.Maybe Main.Message
+3ef4799d67bf5e94955e71a09e76c569
+  parseMessage29 :: GHC.Base.Maybe Main.Message
   {- Strictness: m2,
-     Unfolding: (GHC.Base.Just @ Main.Message Main.parseMessage27) -}
-52ea22d9de9ef6f7de969712f6795038
-  parseMessage27 :: Main.Message
+     Unfolding: (GHC.Base.Just @ Main.Message Main.parseMessage30) -}
+f8e2748a4c72cb3861a3d86f3a18be2d
+  parseMessage3 :: Data.Text.Internal.Text
+  {- Strictness: x -}
+016dd56029b16ac76ea566261d5d9a10
+  parseMessage30 :: Main.Message
   {- Unfolding: (Main.Message
+                   Main.parseMessage42
+                   Main.parseMessage41
+                   Main.parseMessage40
                    Main.parseMessage39
                    Main.parseMessage38
                    Main.parseMessage37
@@ -939,60 +986,54 @@ f73878d58cb0ad8e1d9e3d9a90d55dbc
                    Main.parseMessage34
                    Main.parseMessage33
                    Main.parseMessage32
-                   Main.parseMessage31
-                   Main.parseMessage30
-                   Main.parseMessage29
-                   Main.parseMessage28) -}
-eb9ed7d1287ae32f6a936776eb35b076
-  parseMessage28 :: Data.Text.Internal.Text
+                   Main.parseMessage31) -}
+4852ccd5b5626af76c5a50a820162544
+  parseMessage31 :: Data.Text.Internal.Text
   {- Strictness: x -}
-97a6ff1baa1c6a9c2058a600fe0d6698
-  parseMessage29 :: Data.Text.Internal.Text
+8adaff6b42290a07ca61693b72cd9fdc
+  parseMessage32 :: Data.Text.Internal.Text
   {- Strictness: x -}
-f8e2748a4c72cb3861a3d86f3a18be2d
-  parseMessage3 :: Data.Text.Internal.Text
+547af0eb578e8eda5780e2449fdbf263
+  parseMessage33 :: Data.Text.Internal.Text
   {- Strictness: x -}
-adbb131ba23cc8c1a4238c73552c53fc
-  parseMessage30 :: Data.Text.Internal.Text
+2b96ab05e712390318198446e4635665
+  parseMessage34 :: GHC.Types.Int
   {- Strictness: x -}
-dc132f71697e73141f4e355f2f67b8c7
-  parseMessage31 :: GHC.Types.Int
+04f9bc21894beba598343fe02a1f504a
+  parseMessage35 :: GHC.Types.Int
   {- Strictness: x -}
-21dfad6de4af584c4e62047541729573
-  parseMessage32 :: GHC.Types.Int
+c6e66e0b9774b1527a5643e2c74ac7f6
+  parseMessage36 :: GHC.Types.Int
   {- Strictness: x -}
-31f6e43eeacc239f35e7c3f782bb3b23
-  parseMessage33 :: GHC.Types.Int
-  {- Strictness: x -}
-beab7a21423d0c2a5d50309f3a91e377
-  parseMessage34 :: Data.Text.Internal.Text
-  {- Strictness: x -}
-9872009a0788deeec032e39a2a4730d3
-  parseMessage35 :: Data.Text.Internal.Text
-  {- Strictness: x -}
-d669de8a1b310911fca39eab86b4dc3b
-  parseMessage36 :: Data.Text.Internal.Text
-  {- Strictness: x -}
-890a4960d73fc854b31455138bac927a
-  parseMessage37 :: GHC.Types.Int
+939e7f5ad3ccf1defb5c7215d45f9700
+  parseMessage37 :: Data.Text.Internal.Text
   {- Strictness: x -}
 cbab2c90cd4859ba16756bdb2562eb60
   parseMessage38 :: Data.Text.Internal.Text
   {- Strictness: x -}
-fc9169035c9a0fce88b93d98f7734687
+3c713e23d39f26ae454aa13f541ac827
   parseMessage39 :: Data.Text.Internal.Text
-  {- Unfolding: (Data.Text.Show.unpackCString# "CHAT"#) -}
+  {- Strictness: x -}
 fce7c26497adae410a8074a6e38dd701
   parseMessage4 :: GHC.Types.Int
   {- Strictness: x -}
-eaaaef3f1d07f894833d2bbd5291b6bd
-  parseMessage40 :: [GHC.Types.Char]
+ae7495dc5d98fab328c2714eca8f9f25
+  parseMessage40 :: GHC.Types.Int
+  {- Strictness: x -}
+3840d56bf6130bc9d0227ba929c0be0b
+  parseMessage41 :: Data.Text.Internal.Text
+  {- Strictness: x -}
+1b3dcef20276ff0b7fbaacd5f6d9d2d7
+  parseMessage42 :: Data.Text.Internal.Text
+  {- Unfolding: (Data.Text.Show.unpackCString# "CHAT"#) -}
+4a420feb3a869ef6c29fe7e10240aa9f
+  parseMessage43 :: [GHC.Types.Char]
   {- Unfolding: (GHC.CString.unpackCString# "CHAT"#) -}
-87b163bcac62a082b27bb0eddadab7d2
-  parseMessage41 :: [GHC.Types.Char]
+f103684cd11ce657ebf89dec25f55c86
+  parseMessage44 :: [GHC.Types.Char]
   {- Unfolding: (GHC.CString.unpackCString# "LEAVE_CHATROOM"#) -}
-2d972343d135982684a2a6738d428cf6
-  parseMessage42 :: [GHC.Types.Char]
+94109117551e144ecec97fbcb2645aa7
+  parseMessage45 :: [GHC.Types.Char]
   {- Unfolding: (GHC.CString.unpackCString# "JOIN_CHATROOM"#) -}
 0f38bae039febc59dbc4ffee3490fa1b
   parseMessage5 :: GHC.Types.Int
@@ -1003,12 +1044,15 @@ a7e2c44e90d0075af9ae80a2131c4071
 2bb2b35a778bcef9c0ef31d4247a7fba
   parseMessage7 :: Data.Text.Internal.Text
   {- Strictness: x -}
-c73209122f3d52dc3336d5a3ad14cc3c
-  parseMessage8 :: Data.Text.Internal.Text
-  {- Strictness: x -}
-8f5bb1810027c6a7ad04ec6cf8ad2bce
-  parseMessage9 :: GHC.Types.Int
-  {- Strictness: x -}
+aa26c0caa3c30e57af380d096e31906f
+  parseMessage8 :: GHC.Types.Int
+  {- HasNoCafRefs, Unfolding: (GHC.Types.I# 4#) -}
+721c08b607d1e2108f2da7c7761505d6
+  parseMessage9 :: [GHC.Types.Char] -> [[GHC.Types.Char]]
+  {- Unfolding: (Data.List.Split.Internals.splitOn
+                   @ GHC.Types.Char
+                   GHC.Classes.$fEqChar
+                   Main.parseMessage10) -}
 8156f5914aabe07058613f5525704b5d
   port :: Main.Message -> GHC.Types.Int
   RecSel Left Main.Message
