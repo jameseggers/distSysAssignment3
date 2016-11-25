@@ -1,10 +1,10 @@
 
 ==================== FINAL INTERFACE ====================
-2016-11-25 20:45:58.389355 UTC
+2016-11-25 21:17:26.523553 UTC
 
 interface main@main:Main 8001
-  interface hash: 1f635a6d66c70c8ecdc4fbb96e94bdae
-  ABI hash: c6cacb913545db813dcdc8a1ea98a633
+  interface hash: 2b8ded934b7be6af83b551def5d6de8a
+  ABI hash: 460340f4521e99d0ed21078511a73992
   export-list hash: 2bcee355f4028c51161d4f50924d71ef
   orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
   flag hash: 5a8008075d597e82966edd93f13cccaa
@@ -334,13 +334,15 @@ ec33fda3e39f239787ac4548363a1be4
           Data.Text.Internal.Text #)
   {- Arity: 5, Strictness: <L,U(U)><L,U(U)><S,1*U><S,U><S,U>,
      Inline: [0] -}
-b01416b850adc3e2da17487e66b43cfc
+e30bdb10322ec3f1327d1782a026747b
   $wrunServer ::
     Foreign.C.Types.CInt
+    -> GHC.MVar.MVar Network.Socket.Types.SocketStatus
     -> Control.Concurrent.Chan.Chan Main.Message
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
-  {- Arity: 3, Strictness: <L,U(U)><L,U(U,U)><S,U>, Inline: [0] -}
+  {- Arity: 4, Strictness: <L,U(U)><L,U(U)><L,U(U,U)><S,U>,
+     Inline: [0] -}
 66b330280486323a1fd8be0671195fa3
   $wwaitForConnection ::
     Foreign.C.Types.CInt
@@ -495,13 +497,19 @@ d3adeba1d2331c447a5f6fd9975a41de
   getJoinedRoomMessage :: Main.Message -> GHC.Base.String
   {- Arity: 1,
      Strictness: <L,1*U(A,A,A,A,A,1*U(U,U,U),1*U(U),1*U(U),A,A,A,A,A)> -}
-8ccc66182ea61b0e9a3675b11b427df0
-  getValue :: GHC.Base.String -> Data.Text.Internal.Text
-  {- Arity: 1, Strictness: <L,U>,
-     Unfolding: (\ (line :: GHC.Base.String) ->
+d6a4b582a08a98cfab70564eece23d91
+  getValue ::
+    GHC.Base.String -> GHC.Base.String -> Data.Text.Internal.Text
+  {- Arity: 2, Strictness: <L,U><L,1*U>,
+     Unfolding: (\ (line :: GHC.Base.String)
+                   (delimiter :: GHC.Base.String) ->
                  case GHC.List.$w!!
                         @ [GHC.Types.Char]
-                        (Main.getValue2 line)
+                        (Data.List.Split.Internals.splitOn
+                           @ GHC.Types.Char
+                           GHC.Classes.$fEqChar
+                           delimiter
+                           line)
                         1# of dt { DEFAULT ->
                  case GHC.Magic.runRW#
                         @ 'GHC.Types.PtrRepLifted
@@ -521,15 +529,6 @@ d3adeba1d2331c447a5f6fd9975a41de
 afc1874bd7bcc055ab3e1446e67486b2
   getValue1 :: GHC.Types.Int
   {- HasNoCafRefs, Unfolding: (GHC.Types.I# 4#) -}
-e00d25b956215030252a2a862a2f622a
-  getValue2 :: [GHC.Types.Char] -> [[GHC.Types.Char]]
-  {- Unfolding: (Data.List.Split.Internals.splitOn
-                   @ GHC.Types.Char
-                   GHC.Classes.$fEqChar
-                   Main.getValue3) -}
-ee5bc029203e6bd124c2d41bc0f28fa9
-  getValue3 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString# ":"#) -}
 45f9cbd525b54bf21aec27e125e99628
   handleChat ::
     Network.Socket.Types.Socket
@@ -998,26 +997,26 @@ fba257cbe0541d5d92ae017d54667df8
                 (\ (ds7 :: Main.Message) ->
                  case ds7 of wild { Main.Message ds8 ds9 ds10 ds11 ds12 ds13 ds14 ds15 ds16 ds17 ds18 ds19 ds20 ->
                  ds14 }) -}
-7adbe4c50d1d8b0dbe9e2530ff330245
+51a9140ae7237f78f59d7473714f5cbd
   runServer ::
     (Network.Socket.Types.Socket, Network.Socket.Types.SockAddr)
     -> Control.Concurrent.Chan.Chan Main.Message -> GHC.Types.IO ()
   {- Arity: 3,
-     Strictness: <S(SL),1*U(1*U(U(U),A,A,A,A),A)><L,U(U,U)><S,U>,
+     Strictness: <S(SL),1*U(1*U(U(U),A,A,A,U(U)),A)><L,U(U,U)><S,U>,
      Unfolding: InlineRule (0, True, True)
                 Main.runServer1
                   `cast`
                 (<(Network.Socket.Types.Socket, Network.Socket.Types.SockAddr)>_R
                  ->_R <Control.Concurrent.Chan.Chan Main.Message>_R
                  ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
-d69b5547c7faa342ad50505eac431ac8
+725bdab81cdc9af67a367fdcff2882aa
   runServer1 ::
     (Network.Socket.Types.Socket, Network.Socket.Types.SockAddr)
     -> Control.Concurrent.Chan.Chan Main.Message
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
   {- Arity: 3,
-     Strictness: <S(SL),1*U(1*U(U(U),A,A,A,A),A)><L,U(U,U)><S,U>,
+     Strictness: <S(SL),1*U(1*U(U(U),A,A,A,U(U)),A)><L,U(U,U)><S,U>,
      Inline: INLINE[0],
      Unfolding: InlineRule (3, True, False)
                 (\ (w :: (Network.Socket.Types.Socket,
@@ -1026,7 +1025,7 @@ d69b5547c7faa342ad50505eac431ac8
                    (w2 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
                  case w of ww { (,) ww1 ww2 ->
                  case ww1 of ww3 { Network.Socket.Types.MkSocket ww4 ww5 ww6 ww7 ww8 ->
-                 Main.$wrunServer ww4 w1 w2 } }) -}
+                 Main.$wrunServer ww4 ww8 w1 w2 } }) -}
 d09afff47b4c37b6ff51de6f4776d6f4
   waitForConnection ::
     Network.Socket.Types.Socket

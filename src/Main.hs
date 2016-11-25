@@ -70,6 +70,8 @@ runServer (sock, addr) channel = do
     "JOIN_CHATROOM" -> handleJoinChatroom sock parsedMessage channel
     "LEAVE_CHATROOM" -> handleLeaveChatroom sock parsedMessage channel
     "CHAT" -> handleChat sock parsedMessage channel
+    "LEGACY" -> send sock (unpack (messageText (fromJust parsedMessage))) >> return ()
+    "KILL_SERVICE" -> sClose sock >> return ()
     -- "DISCONNECT" -> handleDisconnect sock parsedMessage channel 2
   runServer (sock,addr) channel
 
@@ -102,18 +104,6 @@ dealWithChannelMessage sock channel receivedMessage = do
       send sock "none"
       return ()
 
--- handleDisconnect :: Socket -> Maybe Message -> Chan Message -> Int -> IO ()
--- handleDisconnect _ Nothing _ _ = return ()
--- handleDisconnect sock message channel 4 = writeChan channel (fromJust message)
--- handleDisconnect sock message channel numMessagesReceived = do
---   messageReceived <- recv sock 4096
---   let messageValue = ((splitOn ":" messageReceived) !! 1)
---   let newMessage = case numMessagesReceived of
---                       2 -> Just actualMessage { joinId = read messageValue :: Int }
---                       3 -> Just actualMessage { clientName = pack messageValue }
---   handleLeaveChatroom sock newMessage channel (numMessagesReceived + 1)
---   where actualMessage = fromJust message
---
 handleChat :: Socket -> Maybe Message -> Chan Message -> IO ()
 handleChat _ Nothing _ = return ()
 handleChat sock message channel = do
@@ -146,10 +136,12 @@ getChatResponseMessage message = ("CHAT: " ++ (show (roomRef message)) ++ "\nCLI
 
 parseMessage :: Text -> Maybe Message
 parseMessage message
-  | Data.List.isPrefixOf "JOIN_CHATROOM" stringMessage = Just Message { messageType = "JOIN_CHATROOM", chatroomToJoin = getValue (splitByLine !! 0), clientIp = "0", port = 0, clientName = getValue (splitByLine !! 3) }
-  | Data.List.isPrefixOf "LEAVE_CHATROOM" stringMessage = Just Message { messageType = "LEAVE_CHATROOM", roomRef = readAsInt (getValue (splitByLine !! 0)), joinId = readAsInt (getValue (splitByLine !! 1)), clientName = getValue (splitByLine !! 2) }
-  | Data.List.isPrefixOf "CHAT" stringMessage = Just Message { messageType = "CHAT", roomRef = readAsInt (getValue (splitByLine !! 0)), joinId = readAsInt (getValue (splitByLine !! 1)), clientName = getValue (splitByLine !! 2), messageText = getValue (splitByLine !! 3)}
+  | Data.List.isPrefixOf "JOIN_CHATROOM" stringMessage = Just Message { messageType = "JOIN_CHATROOM", chatroomToJoin = getValue (splitByLine !! 0) ":", clientIp = "0", port = 0, clientName = getValue (splitByLine !! 3) ":" }
+  | Data.List.isPrefixOf "LEAVE_CHATROOM" stringMessage = Just Message { messageType = "LEAVE_CHATROOM", roomRef = readAsInt (getValue (splitByLine !! 0) ":"), joinId = readAsInt (getValue (splitByLine !! 1) ":"), clientName = getValue (splitByLine !! 2) ":" }
+  | Data.List.isPrefixOf "CHAT" stringMessage = Just Message { messageType = "CHAT", roomRef = readAsInt (getValue (splitByLine !! 0) ":"), joinId = readAsInt (getValue (splitByLine !! 1) ":"), clientName = getValue (splitByLine !! 2) ":", messageText = getValue (splitByLine !! 3) ":"}
   | Data.List.isPrefixOf "DISCONNECT" stringMessage = Just Message { messageType = "DISCONNECT" }
+  | Data.List.isPrefixOf "HELO" stringMessage = Just Message { messageType = "LEGACY", messageText = pack $ (unpack (getValue (splitByLine !! 0) " "))++"\nIP:45.55.165.67\nPort:4342\nStudentID:13330379\n"}
+  | Data.List.isPrefixOf "KILL_SERVICE" stringMessage = Just Message { messageType = "KILL" }
   | otherwise = Nothing
   where stringMessage = unpack message
         splitByLine = splitOn "\\n" stringMessage
@@ -158,5 +150,5 @@ parseMessage message
 readAsInt :: Text -> Int
 readAsInt string = read (unpack string) :: Int
 
-getValue :: String -> Text
-getValue line = pack ((splitOn ":" line) !! 1)
+getValue :: String -> String -> Text
+getValue line delimiter = pack ((splitOn delimiter line) !! 1)
