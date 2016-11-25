@@ -19,7 +19,7 @@ type Msg = String
 data Message = Message { messageType :: Text, clientIp :: Text,
 port :: Int, clientName :: Text, chatroomToJoin :: Text, joinedChatRoom :: Text,
 roomRef :: Int, joinId :: Int, errorCode :: Int, errorDescription :: Text,
-chatroomToLeave :: Text, leftChatroom :: Text } deriving (Show)
+chatroomToLeave :: Text, leftChatroom :: Text, messageText :: Text } deriving (Show)
 
 main :: IO ()
 main = withSocketsDo $ do
@@ -65,8 +65,9 @@ runServer (sock, addr) channel = do
   let stripedMessage = strip $ pack message
   let parsedMessage = parseMessage stripedMessage
   case (messageType (fromJust parsedMessage)) of
-    "JOIN_CHATROOM" -> handleJoinChatroom sock parsedMessage channel 1
-    "LEAVE_CHATROOM" -> handleLeaveChatroom sock parsedMessage channel 1
+    "JOIN_CHATROOM" -> handleJoinChatroom sock parsedMessage channel 2
+    "LEAVE_CHATROOM" -> handleLeaveChatroom sock parsedMessage channel 2
+    "CHAT" -> handleChat sock parsedMessage channel 2
   runServer (sock,addr) channel
 
 listenForMessagesFromOthers :: Socket -> Chan Message -> Int -> Maybe Message -> IO ()
@@ -84,19 +85,43 @@ dealWithChannelMessage sock channel receivedMessage = do
     "JOINED_CHATROOM" -> do
       send sock (getJoinedRoomMessage receivedMessage)
       return ()
+    "CHAT" -> do
+      send sock (getChatResponseMessage receivedMessage)
+      return ()
     "LEAVE_CHATROOM" -> do
       send sock ("LEFT_CHATROOM: "++(show $ roomRef receivedMessage)++"\nJOIN_ID: "++(show $ joinId receivedMessage))
       killThread threadId
       return ()
+    otherwise -> do
+      send sock "none"
+      return ()
+
+handleChat :: Socket -> Maybe Message -> Chan Message -> Int -> IO ()
+handleChat _ Nothing _ _ = return ()
+handleChat sock message channel 5 = do
+  newChannel <- dupChan channel
+  writeChan channel (fromJust message)
+  return ()
+
+handleChat sock message channel numMessagesReceived = do
+  messageReceived <- recv sock 4096
+  let messageValue = ((splitOn ":" messageReceived) !! 1)
+  let newMessage = case numMessagesReceived of
+                      2 -> Just actualMessage { joinId = read messageValue :: Int }
+                      3 -> Just actualMessage { clientName = pack messageValue }
+                      4 -> Just actualMessage { messageText = pack messageValue }
+  let newNumMessagesReceived = numMessagesReceived + 1
+  handleChat sock newMessage channel newNumMessagesReceived
+  where actualMessage = fromJust message
+
 
 handleLeaveChatroom :: Socket -> Maybe Message -> Chan Message -> Int -> IO ()
 handleLeaveChatroom _ Nothing _ _ = return ()
-handleLeaveChatroom sock message channel 3 = writeChan channel (fromJust message)
+handleLeaveChatroom sock message channel 4 = writeChan channel (fromJust message)
 handleLeaveChatroom sock message channel numMessagesReceived = do
   messageReceived <- recv sock 4096
   let messageValue = ((splitOn ":" messageReceived) !! 1)
   let newMessage = case numMessagesReceived of
-                      1 -> Just actualMessage { clientIp = "0", port = 0 }
                       2 -> Just actualMessage { joinId = read messageValue :: Int }
                       3 -> Just actualMessage { clientName = pack messageValue }
   handleLeaveChatroom sock newMessage channel (numMessagesReceived + 1)
@@ -104,14 +129,14 @@ handleLeaveChatroom sock message channel numMessagesReceived = do
 
 handleJoinChatroom :: Socket -> Maybe Message -> Chan Message -> Int -> IO ()
 handleJoinChatroom _ Nothing _ _ = return ()
-handleJoinChatroom sock message channel 4 = do
+handleJoinChatroom sock message channel 5 = do
   newChannel <- dupChan channel
   let justMessage = fromJust message
   let roomReference = hash $ unpack $ (chatroomToJoin justMessage)
   let joinId =  hash $ unpack $ (chatroomToJoin justMessage) `append` (clientName justMessage)
   forkIO (listenForMessagesFromOthers sock newChannel roomReference message)
   let reply = Message { messageType = "JOINED_CHATROOM", clientIp = "123", port = 4342, clientName = "james",
-joinedChatRoom = (joinedChatRoom justMessage), roomRef = roomReference, joinId = joinId }
+joinedChatRoom = (chatroomToJoin justMessage), roomRef = roomReference, joinId = joinId }
   writeChan channel reply
   return ()
 
@@ -119,9 +144,9 @@ handleJoinChatroom sock message channel numMessagesReceived = do
   messageReceived <- recv sock 4096
   let messageValue = pack $ ((splitOn ":" messageReceived) !! 1)
   let newMessage = case numMessagesReceived of
-                      1 -> Just actualMessage { clientIp = "0", joinedChatRoom = (chatroomToJoin actualMessage) }
-                      2 -> Just actualMessage { port = 0 }
+                      2 -> Just actualMessage
                       3 -> Just actualMessage { clientName = messageValue }
+                      4 -> Just actualMessage { clientName = messageValue }
   handleJoinChatroom sock newMessage channel newNumMessagesReceived
   where newNumMessagesReceived = numMessagesReceived + 1
         actualMessage = fromJust message
@@ -129,11 +154,14 @@ handleJoinChatroom sock message channel numMessagesReceived = do
 getJoinedRoomMessage :: Message -> String
 getJoinedRoomMessage receivedMessage = ("JOINED_CHATROOM: "++(unpack (joinedChatRoom receivedMessage))++"\nSERVER_IP:#{server_ip}\nPORT:0\nROOM_REF: "++(show $ roomRef receivedMessage)++"\nJOIN_ID: "++(show $ joinId receivedMessage)++"\n")
 
+getChatResponseMessage :: Message -> String
+getChatResponseMessage message = ("CHAT: " ++ (show (roomRef message)) ++ "\nCLIENT_NAME: " ++ (unpack (clientName message)) ++ "\nMESSAGE: " ++ (unpack (messageText message)))
+
 parseMessage :: Text -> Maybe Message
 parseMessage message
-  | Data.List.isPrefixOf "JOIN_CHATROOM" stringMessage = Just Message { messageType = "JOIN_CHATROOM", chatroomToJoin = (pack nameOfChatroom) }
-  | Data.List.isPrefixOf "LEAVE_CHATROOM" stringMessage = Just Message { messageType = "LEAVE_CHATROOM", roomRef = read stringMessage :: Int }
-  | Data.List.isPrefixOf "CHAT" stringMessage = Just Message { messageType = "CHAT"}
+  | Data.List.isPrefixOf "JOIN_CHATROOM" stringMessage = Just Message { messageType = "JOIN_CHATROOM", chatroomToJoin = (pack messageValue), clientIp = "0", port = 0 }
+  | Data.List.isPrefixOf "LEAVE_CHATROOM" stringMessage = Just Message { messageType = "LEAVE_CHATROOM", roomRef = read messageValue :: Int, clientIp = "0", port = 0 }
+  | Data.List.isPrefixOf "CHAT" stringMessage = Just Message { messageType = "CHAT", roomRef = read messageValue :: Int, clientIp = "0", port = 0 }
   | otherwise = Nothing
   where stringMessage = unpack message
-        nameOfChatroom = (splitOn ":" (unpack message)) !! 1
+        messageValue = (splitOn ":" (unpack message)) !! 1
