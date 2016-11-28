@@ -62,8 +62,6 @@ addNewSocket (sock, _) sockets maxSockets
 runServer :: (Socket, SockAddr) -> Chan Message -> IO ()
 runServer (sock, addr) channel = do
   message <- recv sock 4096
-  -- putStrLn message
-  -- putStrLn (show (read (unpack (getValue ((splitOn "\\n" message) !! 0))) :: Int))
   let stripedMessage = strip $ pack message
   let parsedMessage = parseMessage stripedMessage
   case (messageType (fromJust parsedMessage)) of
@@ -71,7 +69,7 @@ runServer (sock, addr) channel = do
     "LEAVE_CHATROOM" -> handleLeaveChatroom sock parsedMessage channel
     "CHAT" -> handleChat sock parsedMessage channel
     "LEGACY" -> send sock (unpack (messageText (fromJust parsedMessage))) >> return ()
-    "KILL_SERVICE" -> sClose sock >> return ()
+    "KILL" -> sClose sock >> return ()
     -- "DISCONNECT" -> handleDisconnect sock parsedMessage channel 2
   runServer (sock,addr) channel
 
@@ -140,12 +138,13 @@ parseMessage message
   | Data.List.isPrefixOf "LEAVE_CHATROOM" stringMessage = Just Message { messageType = "LEAVE_CHATROOM", roomRef = readAsInt (getValue (splitByLine !! 0) ":"), joinId = readAsInt (getValue (splitByLine !! 1) ":"), clientName = getValue (splitByLine !! 2) ":" }
   | Data.List.isPrefixOf "CHAT" stringMessage = Just Message { messageType = "CHAT", roomRef = readAsInt (getValue (splitByLine !! 0) ":"), joinId = readAsInt (getValue (splitByLine !! 1) ":"), clientName = getValue (splitByLine !! 2) ":", messageText = getValue (splitByLine !! 3) ":"}
   | Data.List.isPrefixOf "DISCONNECT" stringMessage = Just Message { messageType = "DISCONNECT" }
-  | Data.List.isPrefixOf "HELO" stringMessage = Just Message { messageType = "LEGACY", messageText = pack $ (unpack (getValue (splitByLine !! 0) " "))++"\nIP:45.55.165.67\nPort:4342\nStudentID:13330379\n"}
+  | Data.List.isPrefixOf "HELO" stringMessage = Just Message { messageType = "LEGACY", messageText = "HELO " `append` (getValue (splitByLine !! 0) " ") `append` "\nIP:45.55.165.67\nPort:4342\nStudentID:13330379\n"}
   | Data.List.isPrefixOf "KILL_SERVICE" stringMessage = Just Message { messageType = "KILL" }
   | otherwise = Nothing
   where stringMessage = unpack message
         splitByLine = splitOn "\\n" stringMessage
-        messageValue = (splitOn ":" (unpack message)) !! 1
+        -- splitByLine = Data.List.lines stringMessage
+        -- messageValue = (splitOn ":" (unpack message)) !! 1
 
 readAsInt :: Text -> Int
 readAsInt string = read (unpack string) :: Int
