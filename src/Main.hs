@@ -121,16 +121,17 @@ handleJoinChatroom sock message channel = do
   let roomReference = hash $ unpack $ (chatroomToJoin justMessage)
   let joinId =  hash $ unpack $ (chatroomToJoin justMessage) `append` (clientName justMessage)
   forkIO (listenForMessagesFromOthers sock newChannel roomReference message)
-  let reply = Message { messageType = "JOINED_CHATROOM", clientIp = "123", port = 4342, clientName = "james",
-joinedChatRoom = (chatroomToJoin justMessage), roomRef = roomReference, joinId = joinId }
+  let reply = Message { messageType = "CHAT", clientIp = "0", port = 0, clientName = (clientName justMessage),
+joinedChatRoom = (chatroomToJoin justMessage), roomRef = roomReference, joinId = joinId, messageText = (clientName justMessage) `append` " has joined this chatroom.\n\n" }
+  send sock (getJoinedRoomMessage reply)
   writeChan channel reply
   return ()
 
 getJoinedRoomMessage :: Message -> String
-getJoinedRoomMessage receivedMessage = ("JOINED_CHATROOM: "++(unpack (joinedChatRoom receivedMessage))++"\nSERVER_IP:#{server_ip}\nPORT:0\nROOM_REF: "++(show $ roomRef receivedMessage)++"\nJOIN_ID: "++(show $ joinId receivedMessage)++"\n")
+getJoinedRoomMessage receivedMessage = ("JOINED_CHATROOM: "++(unpack (joinedChatRoom receivedMessage))++"\nSERVER_IP:45.55.165.67\nPORT:4243\nROOM_REF: "++(show $ roomRef receivedMessage)++"\nJOIN_ID: "++(show $ joinId receivedMessage)++"\n")
 
 getChatResponseMessage :: Message -> String
-getChatResponseMessage message = ("CHAT: " ++ (show (roomRef message)) ++ "\nCLIENT_NAME: " ++ (unpack (clientName message)) ++ "\nMESSAGE: " ++ (unpack (messageText message)))
+getChatResponseMessage message = ("CHAT: " ++ (show (roomRef message)) ++ "\nCLIENT_NAME: " ++ (unpack (clientName message)) ++ "\nMESSAGE: " ++ (unpack (messageText message)) ++ "\n")
 
 parseMessage :: Text -> Maybe Message
 parseMessage message
@@ -138,7 +139,7 @@ parseMessage message
   | Data.List.isPrefixOf "LEAVE_CHATROOM" stringMessage = Just Message { messageType = "LEAVE_CHATROOM", roomRef = readAsInt (getValue (splitByLine !! 0) ":"), joinId = readAsInt (getValue (splitByLine !! 1) ":"), clientName = getValue (splitByLine !! 2) ":" }
   | Data.List.isPrefixOf "CHAT" stringMessage = Just Message { messageType = "CHAT", roomRef = readAsInt (getValue (splitByLine !! 0) ":"), joinId = readAsInt (getValue (splitByLine !! 1) ":"), clientName = getValue (splitByLine !! 2) ":", messageText = getValue (splitByLine !! 3) ":"}
   | Data.List.isPrefixOf "DISCONNECT" stringMessage = Just Message { messageType = "DISCONNECT" }
-  | Data.List.isPrefixOf "HELO" stringMessage = Just Message { messageType = "LEGACY", messageText = "HELO " `append` (getValue (splitByLine !! 0) " ") `append` "\nIP:45.55.165.67\nPort:4342\nStudentID:13330379\n"}
+  | Data.List.isPrefixOf "HELO" stringMessage = Just Message { messageType = "LEGACY", messageText = "HELO " `append` (getValue (splitByLine !! 0) " ") `append` "\nIP:45.55.165.67\nPort:4243\nStudentID:13330379\n"}
   | Data.List.isPrefixOf "KILL_SERVICE" stringMessage = Just Message { messageType = "KILL" }
   | otherwise = Nothing
   where stringMessage = unpack message
