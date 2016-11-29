@@ -95,7 +95,6 @@ dealWithChannelMessage sock channel receivedMessage = do
       send sock (getChatResponseMessage receivedMessage)
       return ()
     "LEAVE_CHATROOM" -> do
-      send sock ("LEFT_CHATROOM: "++(show $ roomRef receivedMessage)++"\nJOIN_ID: "++(show $ joinId receivedMessage))
       killThread threadId
       return ()
     otherwise -> do
@@ -111,7 +110,12 @@ handleChat sock message channel = do
 
 handleLeaveChatroom :: Socket -> Maybe Message -> Chan Message -> IO ()
 handleLeaveChatroom _ Nothing _ = return ()
-handleLeaveChatroom sock message channel = writeChan channel (fromJust message)
+handleLeaveChatroom sock message channel = do
+  let justMessage = fromJust message
+  let reply = Message { messageType = "CHAT", clientIp = "0", port = 0, clientName = (clientName justMessage),
+joinedChatRoom = (chatroomToJoin justMessage), roomRef = (roomRef justMessage), joinId = (joinId justMessage), messageText = (clientName justMessage) `append` " has left this chatroom.\n\n" }
+  send sock (getLeftRoomMessage reply)
+  writeChan channel reply
 
 handleJoinChatroom :: Socket -> Maybe Message -> Chan Message -> IO ()
 handleJoinChatroom _ Nothing _ = return ()
@@ -129,6 +133,9 @@ joinedChatRoom = (chatroomToJoin justMessage), roomRef = roomReference, joinId =
 
 getJoinedRoomMessage :: Message -> String
 getJoinedRoomMessage receivedMessage = ("JOINED_CHATROOM: "++(unpack (joinedChatRoom receivedMessage))++"\nSERVER_IP:45.55.165.67\nPORT:4243\nROOM_REF: "++(show $ roomRef receivedMessage)++"\nJOIN_ID: "++(show $ joinId receivedMessage)++"\n")
+
+getLeftRoomMessage :: Message -> String
+getLeftRoomMessage receivedMessage = ("LEFT_CHATROOM: "++(show $ roomRef receivedMessage)++"\nJOIN_ID: "++(show $ joinId receivedMessage) ++ "\n")
 
 getChatResponseMessage :: Message -> String
 getChatResponseMessage message = ("CHAT: " ++ (show (roomRef message)) ++ "\nCLIENT_NAME: " ++ (unpack (clientName message)) ++ "\nMESSAGE: " ++ (unpack (messageText message)) ++ "\n")
