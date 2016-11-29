@@ -113,7 +113,7 @@ handleLeaveChatroom _ Nothing _ = return ()
 handleLeaveChatroom sock message channel = do
   let justMessage = fromJust message
   let reply = Message { messageType = "CHAT", clientIp = "0", port = 0, clientName = (clientName justMessage),
-joinedChatRoom = (chatroomToJoin justMessage), roomRef = (roomRef justMessage), joinId = (joinId justMessage), messageText = (clientName justMessage) `append` " has left this chatroom.\n\n" }
+leftChatroom = (chatroomToJoin justMessage), roomRef = (roomRef justMessage), joinId = (joinId justMessage), messageText = (clientName justMessage) `append` " has left this chatroom.\n\n" }
   send sock (getLeftRoomMessage reply)
   writeChan channel reply
 
