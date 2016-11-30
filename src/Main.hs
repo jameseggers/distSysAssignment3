@@ -87,17 +87,24 @@ listenForMessagesFromOthers sock channel chatroomRef message = do
   putStrLn (show (roomRef receivedMessage))
   putStrLn (unpack (messageType receivedMessage))
   if (roomRef receivedMessage) == chatroomRef
-    then dealWithChannelMessage sock channel receivedMessage
-    else writeChan channel receivedMessage
-  listenForMessagesFromOthers sock channel chatroomRef message
+    then case (messageType receivedMessage) of
+          "CHAT" -> do
+            send sock (getChatResponseMessage receivedMessage)
+            listenForMessagesFromOthers sock channel chatroomRef message
+          "LEAVE_CHATROOM" -> do
+            return ()
+          otherwise -> do
+            listenForMessagesFromOthers sock channel chatroomRef message
+    else writeChan channel receivedMessage >> listenForMessagesFromOthers sock channel chatroomRef message
 
 dealWithChannelMessage :: Socket -> Chan Message -> Message -> IO ()
 dealWithChannelMessage sock channel receivedMessage = do
   threadId <- myThreadId
+  putStrLn "---"
+  putStrLn "in fokr"
+  putStrLn (show threadId)
+  putStrLn "---"
   case (messageType receivedMessage) of
-    -- "JOINED_CHATROOM" -> do
-    --   send sock (getJoinedRoomMessage receivedMessage)
-    --   return ()
     "CHAT" -> do
       send sock (getChatResponseMessage receivedMessage)
       return ()
@@ -130,7 +137,11 @@ handleJoinChatroom sock message channel = do
   let justMessage = fromJust message
   let roomReference = hash $ unpack $ (chatroomToJoin justMessage)
   let joinId =  hash $ unpack $ (chatroomToJoin justMessage) `append` (clientName justMessage)
-  forkIO (listenForMessagesFromOthers sock channel roomReference message)
+  tt <- forkIO (listenForMessagesFromOthers sock channel roomReference message)
+  putStrLn "---"
+  putStrLn "join"
+  putStrLn (show tt)
+  putStrLn "---"
   let reply = Message { messageType = "CHAT", clientIp = "0", port = 0, clientName = (clientName justMessage),
 joinedChatRoom = (chatroomToJoin justMessage), roomRef = roomReference, joinId = joinId, messageText = (clientName justMessage) `append` " has joined this chatroom." }
   send sock (getJoinedRoomMessage reply)
