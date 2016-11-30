@@ -38,8 +38,9 @@ main = withSocketsDo $ do
 waitForConnection :: Socket -> Chan Message -> [Socket] -> Int -> IO ()
 waitForConnection sock channel runningSockets maximumNumberOfThreads = do
   conn <- accept sock
+  newChannel <- dupChan channel
   activeSockets <- numberOfActiveSockets runningSockets 0
-  threadId <- forkIO (runServer conn channel)
+  threadId <- forkIO (runServer conn newChannel)
   let runningSocketsWithNewSocket = addNewSocket conn runningSockets maximumNumberOfThreads
   if (activeSockets >= maximumNumberOfThreads)
     then (killThread threadId) >> sClose (fst conn)
@@ -91,9 +92,9 @@ dealWithChannelMessage :: Socket -> Chan Message -> Message -> IO ()
 dealWithChannelMessage sock channel receivedMessage = do
   threadId <- myThreadId
   case (messageType receivedMessage) of
-    "JOINED_CHATROOM" -> do
-      send sock (getJoinedRoomMessage receivedMessage)
-      return ()
+    -- "JOINED_CHATROOM" -> do
+    --   send sock (getJoinedRoomMessage receivedMessage)
+    --   return ()
     "CHAT" -> do
       send sock (getChatResponseMessage receivedMessage)
       return ()
@@ -106,7 +107,6 @@ dealWithChannelMessage sock channel receivedMessage = do
 handleChat :: Socket -> Maybe Message -> Chan Message -> IO ()
 handleChat _ Nothing _ = return ()
 handleChat sock message channel = do
-  newChannel <- dupChan channel
   writeChan channel (fromJust message)
 
 handleLeaveChatroom :: Socket -> Maybe Message -> Chan Message -> IO ()
@@ -123,11 +123,11 @@ leftChatroom = (chatroomToJoin justMessage), roomRef = (roomRef justMessage), jo
 handleJoinChatroom :: Socket -> Maybe Message -> Chan Message -> IO ()
 handleJoinChatroom _ Nothing _ = return ()
 handleJoinChatroom sock message channel = do
-  newChannel <- dupChan channel
+  -- newChannel <- dupChan channel
   let justMessage = fromJust message
   let roomReference = hash $ unpack $ (chatroomToJoin justMessage)
   let joinId =  hash $ unpack $ (chatroomToJoin justMessage) `append` (clientName justMessage)
-  forkIO (listenForMessagesFromOthers sock newChannel roomReference message)
+  forkIO (listenForMessagesFromOthers sock channel roomReference message)
   let reply = Message { messageType = "CHAT", clientIp = "0", port = 0, clientName = (clientName justMessage),
 joinedChatRoom = (chatroomToJoin justMessage), roomRef = roomReference, joinId = joinId, messageText = (clientName justMessage) `append` " has joined this chatroom." }
   send sock (getJoinedRoomMessage reply)
