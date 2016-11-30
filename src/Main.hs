@@ -83,9 +83,12 @@ handleMessageByType message sock channel = do
 listenForMessagesFromOthers :: Socket -> Chan Message -> Int -> Maybe Message -> IO ()
 listenForMessagesFromOthers sock channel chatroomRef message = do
   receivedMessage <- readChan channel
+  putStrLn (show chatroomRef)
+  putStrLn (show (roomRef receivedMessage))
+  putStrLn (unpack (messageType receivedMessage))
   if (roomRef receivedMessage) == chatroomRef
     then dealWithChannelMessage sock channel receivedMessage
-    else return ()
+    else writeChan channel receivedMessage
   listenForMessagesFromOthers sock channel chatroomRef message
 
 dealWithChannelMessage :: Socket -> Chan Message -> Message -> IO ()
