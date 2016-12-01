@@ -26,7 +26,7 @@ main = withSocketsDo $ do
   bind sock address
   listen sock 2
   channel <- newChan
-  forkIO (messageFanout [([], -5086779233225239604)] channel)
+  forkIO (messageFanout [] channel)
   waitForConnection sock channel [] maximumThreads
   where socketType = Stream
         socketFamily = AF_INET
@@ -80,10 +80,9 @@ handleMessageByType message sock channel = do
 messageFanout :: [([Socket], Int)] -> Chan Message -> IO ()
 messageFanout socketsAndRoomRefs channel = do
   receivedMessage <- readChan channel
-  findSocksToSendTo socketsAndRoomRefs receivedMessage
-  putStrLn (unpack (messageType receivedMessage))
   let socketsAndRoomRefsWithNewRooms = addNewRoomsToList socketsAndRoomRefs receivedMessage
   let newSocksAndRoomRefs = updateSocksRefsList socketsAndRoomRefsWithNewRooms [] receivedMessage
+  findSocksToSendTo newSocksAndRoomRefs receivedMessage
   messageFanout newSocksAndRoomRefs channel
 
 addNewRoomsToList :: [([Socket], Int)] -> Message -> [([Socket], Int)]
@@ -97,7 +96,7 @@ findSocksToSendTo :: [([Socket], Int)] -> Message -> IO ()
 findSocksToSendTo [] _  = return ()
 findSocksToSendTo (socksAndRef:rest) message = do
   if (roomRef message) == (snd socksAndRef) && (messageType message) == "CHAT"
-    then putStrLn "het bab" >> sendToSocketsInRoom (fst socksAndRef) message
+    then sendToSocketsInRoom (fst socksAndRef) message
     else findSocksToSendTo rest message
 
 sendToSocketsInRoom :: [Socket] -> Message -> IO ()
@@ -133,12 +132,14 @@ handleLeaveChatroom :: Socket -> Maybe Message -> Chan Message -> IO ()
 handleLeaveChatroom _ Nothing _ = return ()
 handleLeaveChatroom sock message channel = do
   let justMessage = fromJust message
-  let reply = Message { messageType = "CHAT", clientIp = "0", port = 0, clientName = (clientName justMessage),
-leftChatroom = (chatroomToJoin justMessage), roomRef = (roomRef justMessage), joinId = (joinId justMessage), messageText = (clientName justMessage) `append` " has left this chatroom." }
-  send sock (getLeftRoomMessage reply)
-  let leaveReply = reply { messageType = "LEAVE_CHATROOM"}
-  writeChan channel reply
+  let leaveReply = Message { messageType = "CHAT", clientIp = "0", port = 0, clientName = (clientName justMessage),
+leftChatroom = (chatroomToJoin justMessage), roomRef = (roomRef justMessage),
+joinId = (joinId justMessage), messageText = (clientName justMessage) `append` " has left this chatroom.",
+selectedSocket = sock, socketAction = "REMOVE" }
+  send sock (getLeftRoomMessage leaveReply)
   writeChan channel leaveReply
+  let reply = leaveReply { messageType = "SOCK_ACTION"}
+  writeChan channel reply
 
 handleJoinChatroom :: Socket -> Maybe Message -> Chan Message -> IO ()
 handleJoinChatroom _ Nothing _ = return ()
