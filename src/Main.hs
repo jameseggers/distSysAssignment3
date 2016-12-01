@@ -3,7 +3,7 @@
 module Main where
 
 import Network.Socket
-import Data.Text hiding (head, tail, splitOn, length)
+import Data.Text hiding (head, tail, splitOn, length, map)
 import Data.List.Split
 import Data.List
 import Control.Concurrent
@@ -15,7 +15,7 @@ import Data.Hashable
 data Message = Message { messageType :: Text, clientIp :: Text,
 port :: Int, clientName :: Text, chatroomToJoin :: Text, joinedChatRoom :: Text,
 roomRef :: Int, joinId :: Int, errorCode :: Int, errorDescription :: Text,
-chatroomToLeave :: Text, leftChatroom :: Text, messageText :: Text } deriving (Show)
+chatroomToLeave :: Text, leftChatroom :: Text, messageText :: Text, selectedSocket :: Socket, socketAction :: Text } deriving (Show)
 
 main :: IO ()
 main = withSocketsDo $ do
@@ -26,6 +26,7 @@ main = withSocketsDo $ do
   bind sock address
   listen sock 2
   channel <- newChan
+  forkIO (messageFanout [([], -5086779233225239604)] channel)
   waitForConnection sock channel [] maximumThreads
   where socketType = Stream
         socketFamily = AF_INET
@@ -76,30 +77,53 @@ handleMessageByType message sock channel = do
     "LEGACY" -> send sock (unpack (messageText justMessage)) >> return ()
     "KILL" -> sClose sock >> return ()
 
-listenForMessagesFromOthers :: Socket -> Chan Message -> Int -> Int -> Maybe Message -> IO ()
-listenForMessagesFromOthers sock channel chatroomRef joinIdHash message = do
+messageFanout :: [([Socket], Int)] -> Chan Message -> IO ()
+messageFanout socketsAndRoomRefs channel = do
   receivedMessage <- readChan channel
-  putStrLn "---"
-  putStrLn (show joinIdHash)
-  putStrLn (show (joinId receivedMessage))
-  putStrLn (show chatroomRef)
-  putStrLn (show (roomRef receivedMessage))
+  findSocksToSendTo socketsAndRoomRefs receivedMessage
   putStrLn (unpack (messageType receivedMessage))
-  putStrLn (unpack (messageText receivedMessage))
-  putStrLn "---"
-  if (roomRef receivedMessage) == chatroomRef
-    then case (messageType receivedMessage) of
-          "CHAT" -> do
-            send sock (getChatResponseMessage receivedMessage)
-            listenForMessagesFromOthers sock channel chatroomRef joinIdHash message
-          "LEAVE_CHATROOM" -> do
-            if joinIdHash == (joinId receivedMessage)
-              then return ()
-              else listenForMessagesFromOthers sock channel chatroomRef joinIdHash message
-          otherwise -> listenForMessagesFromOthers sock channel chatroomRef joinIdHash message
-    else do
-      --writeChan channel receivedMessage
-      listenForMessagesFromOthers sock channel chatroomRef joinIdHash message
+  let socketsAndRoomRefsWithNewRooms = addNewRoomsToList socketsAndRoomRefs receivedMessage
+  let newSocksAndRoomRefs = updateSocksRefsList socketsAndRoomRefsWithNewRooms [] receivedMessage
+  messageFanout newSocksAndRoomRefs channel
+
+addNewRoomsToList :: [([Socket], Int)] -> Message -> [([Socket], Int)]
+addNewRoomsToList socksAndRefs message
+  | (ref `elem` justRefs) == True = socksAndRefs
+  | otherwise = (([], ref) : socksAndRefs)
+  where justRefs = map (snd) socksAndRefs
+        ref = (roomRef message)
+
+findSocksToSendTo :: [([Socket], Int)] -> Message -> IO ()
+findSocksToSendTo [] _  = return ()
+findSocksToSendTo (socksAndRef:rest) message = do
+  if (roomRef message) == (snd socksAndRef) && (messageType message) == "CHAT"
+    then putStrLn "het bab" >> sendToSocketsInRoom (fst socksAndRef) message
+    else findSocksToSendTo rest message
+
+sendToSocketsInRoom :: [Socket] -> Message -> IO ()
+sendToSocketsInRoom [] _ = return ()
+sendToSocketsInRoom (sock:sockets) message = do
+  send sock (getChatResponseMessage message)
+  sendToSocketsInRoom sockets message
+
+updateSocksRefsList :: [([Socket], Int)] -> [([Socket], Int)] -> Message -> [([Socket], Int)]
+updateSocksRefsList [] acc _ = acc
+updateSocksRefsList (socksAndRef:rest) acc message =
+  if (messageType message) == "SOCK_ACTION" && (snd socksAndRef) == (roomRef message)
+    then updateSocksRefsList rest ( (  (preformSockAction (fst socksAndRef) message), (snd socksAndRef) ) : acc) message
+    else updateSocksRefsList rest (socksAndRef:acc) message
+
+preformSockAction :: [Socket] -> Message -> [Socket]
+preformSockAction sockets message =
+  case (socketAction message) of
+    "ADD" -> (selectedSocket message) : sockets
+    "REMOVE" -> removeSockFromList sockets [] (selectedSocket message)
+
+removeSockFromList :: [Socket] -> [Socket] -> Socket -> [Socket]
+removeSockFromList [] acc _ = acc
+removeSockFromList (sock:sockets) acc selectedSocket
+  | sock == selectedSocket = removeSockFromList sockets acc selectedSocket
+  | otherwise = removeSockFromList sockets (sock:acc) selectedSocket
 
 handleChat :: Socket -> Maybe Message -> Chan Message -> IO ()
 handleChat _ Nothing _ = return ()
@@ -119,16 +143,17 @@ leftChatroom = (chatroomToJoin justMessage), roomRef = (roomRef justMessage), jo
 handleJoinChatroom :: Socket -> Maybe Message -> Chan Message -> IO ()
 handleJoinChatroom _ Nothing _ = return ()
 handleJoinChatroom sock message channel = do
-  loloo <- dupChan channel
   let justMessage = fromJust message
   let roomReference = hash $ unpack $ (chatroomToJoin justMessage)
   let joinIdHash =  hash $ unpack $ (chatroomToJoin justMessage) `append` (clientName justMessage)
-  forkIO (listenForMessagesFromOthers sock loloo roomReference joinIdHash message)
-  let reply = Message { messageType = "CHAT", clientIp = "0", port = 0, clientName = (clientName justMessage),
+  -- forkIO (listenForMessagesFromOthers sock channel roomReference joinIdHash message)
+  let reply = Message { messageType = "SOCK_ACTION", clientIp = "0", port = 0, clientName = (clientName justMessage),
 joinedChatRoom = (chatroomToJoin justMessage), roomRef = roomReference, joinId = joinIdHash,
-messageText = (clientName justMessage) `append` " has joined this chatroom." }
+messageText = (clientName justMessage) `append` " has joined this chatroom.", selectedSocket = sock, socketAction = "ADD" }
   send sock (getJoinedRoomMessage reply)
   writeChan channel reply
+  let chatReply = reply { messageType = "CHAT" }
+  writeChan channel chatReply
 
 getJoinedRoomMessage :: Message -> String
 getJoinedRoomMessage receivedMessage = ("JOINED_CHATROOM: "++(unpack (joinedChatRoom receivedMessage))++"\nSERVER_IP:45.55.165.67\nPORT:4243\nROOM_REF: "++(show $ roomRef receivedMessage)++"\nJOIN_ID: "++(show $ joinId receivedMessage)++"\n")

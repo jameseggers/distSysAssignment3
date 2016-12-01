@@ -1,0 +1,24 @@
+-- listenForMessagesFromOthers :: Socket -> Chan Message -> Int -> Int -> Maybe Message -> IO ()
+-- listenForMessagesFromOthers sock channel chatroomRef joinIdHash message = do
+--   receivedMessage <- readChan channel
+--   putStrLn "---"
+--   putStrLn (show joinIdHash)
+--   putStrLn (show (joinId receivedMessage))
+--   putStrLn (show chatroomRef)
+--   putStrLn (show (roomRef receivedMessage))
+--   putStrLn (unpack (messageType receivedMessage))
+--   putStrLn (unpack (messageText receivedMessage))
+--   putStrLn "---"
+--   if (roomRef receivedMessage) == chatroomRef
+--     then case (messageType receivedMessage) of
+--           "CHAT" -> do
+--             send sock (getChatResponseMessage receivedMessage)
+--             listenForMessagesFromOthers sock channel chatroomRef joinIdHash message
+--           "LEAVE_CHATROOM" -> do
+--             if joinIdHash == (joinId receivedMessage)
+--               then return ()
+--               else listenForMessagesFromOthers sock channel chatroomRef joinIdHash message
+--           otherwise -> listenForMessagesFromOthers sock channel chatroomRef joinIdHash message
+--     else do
+--       writeChan channel receivedMessage
+--       listenForMessagesFromOthers sock channel chatroomRef joinIdHash message
